@@ -1,0 +1,84 @@
+using chat_HTTP_server.Context;
+using chat_HTTP_server.Model;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "CHAT API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
+
+AddDbContext();
+
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<User>(opt => 
+    { 
+        opt.Password.RequiredLength = 8; 
+        opt.User.RequireUniqueEmail = true; 
+        opt.Password.RequireNonAlphanumeric = false;
+        opt.SignIn.RequireConfirmedEmail = false; 
+    })
+    .AddEntityFrameworkStores<ChatContext>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+app.MapControllers();
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapGroup("/api").MapIdentityApi<User>();
+app.UseWebSockets();
+
+
+app.Run();
+
+
+
+#region AddDbContext()
+
+void AddDbContext()
+{
+    builder.Services.AddDbContext<ChatContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Chat") ?? throw new InvalidOperationException("Connection string 'Hospital' not found.")));
+}
+
+#endregion
+
+//https://andrewlock.net/should-you-use-the-dotnet-8-identity-api-endpoints/
