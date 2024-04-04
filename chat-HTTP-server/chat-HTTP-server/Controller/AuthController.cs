@@ -1,5 +1,6 @@
 ﻿
 using System.Security.Claims;
+using chat_HTTP_server.Repository;
 using chat_HTTP_server.Service.AuthModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -14,9 +15,11 @@ public class AuthController : ControllerBase
 {
     private IAuthService _authService;
 
-    public AuthController(IAuthService authService)
+    private IUserRepository _userRepository;
+    public AuthController(IAuthService authService, IUserRepository userRepository)
     {
         _authService = authService;
+        _userRepository = userRepository;
     }
 
     [HttpPost("login")]
@@ -27,9 +30,10 @@ public class AuthController : ControllerBase
             return BadRequest();
         }
 
+        Console.WriteLine(request);
         try
         {
-            var authResult = await _authService.LoginAsync(request.Name, request.Password);
+            var authResult = await _authService.LoginAsync(request.name, request.password);
             if (authResult.Success)
             {
                 
@@ -72,6 +76,48 @@ public class AuthController : ControllerBase
        Response.Cookies.Delete("access_token");
 
         return Ok();
+    }
+    
+    [HttpGet("UsernameValidator/{username}")]
+    public IActionResult UsernameValidator(string username)
+    {
+        try
+        {
+            var res = _userRepository.IsUsernameValid(username);
+
+            if (res)
+            {
+                return Ok();
+            }
+
+            return StatusCode(422);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return BadRequest();
+        }
+    }
+    
+    [HttpGet("EmailValidator/{email}")] //loggolás, ip korlátozás
+    public IActionResult EmailValidator(string email)
+    {
+        try
+        {
+            var res = _userRepository.IsEmailValid(email);
+
+            if (res)
+            {
+                return Ok();
+            }
+
+            return StatusCode(422);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            return BadRequest();
+        }
     }
     
     private void AddErrors(AuthResult result)

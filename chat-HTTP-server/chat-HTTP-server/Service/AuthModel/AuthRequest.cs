@@ -1,3 +1,5 @@
-﻿namespace chat_HTTP_server.Service.AuthModel;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record AuthRequest(string Name, string Password);
+namespace chat_HTTP_server.Service.AuthModel;
+
+public record AuthRequest([Required]string name, [Required]string password);

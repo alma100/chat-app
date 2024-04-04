@@ -1,6 +1,7 @@
 using System.Text;
 using chat_HTTP_server.Context;
 using chat_HTTP_server.Model;
+using chat_HTTP_server.Repository;
 using chat_HTTP_server.Service.AuthModel;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -115,6 +116,7 @@ void AddServices()
     
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 }
 

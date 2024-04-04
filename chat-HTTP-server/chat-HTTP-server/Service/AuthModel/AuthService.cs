@@ -34,7 +34,7 @@ public class AuthService : IAuthService
         return new AuthResult(true, email, username, "");
     }
 
-    public async Task<AuthResult> LoginAsync(string username, string password)
+    public async Task<AuthResult> LoginAsync(string? username, string? password)
     {
         var managedUserByEmail = await _userManager.FindByEmailAsync(username);
 
