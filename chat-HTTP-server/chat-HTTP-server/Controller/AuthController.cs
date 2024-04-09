@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace chat_HTTP_server.Controller;
 
@@ -29,8 +30,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest();
         }
-
-        Console.WriteLine(request);
+        
         try
         {
             var authResult = await _authService.LoginAsync(request.name, request.password);
@@ -138,6 +138,5 @@ public class AuthController : ControllerBase
         };
         Response.Cookies.Append(tokenName, token, cookieOptions);
     }
-
-
+    
 }

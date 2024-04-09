@@ -6,10 +6,12 @@ import { useNavigate } from "react-router-dom"
 const Login = ({ setProfileData }) => {
 
     const navigate = useNavigate();
-    
+
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
     const [result, setResult] = useState(null);
+
+    const [passwordVisible, setPasswordVisible] = useState(false);
 
 
     const loginRequestFetch = (loginData) => {
@@ -26,14 +28,16 @@ const Login = ({ setProfileData }) => {
             } else if (res.status === 401) {
                 setResult(false);
             } else if (res.status === 400) {
-                setResult(null);
+                setResult("");
             } else {
                 setResult("error");
             }
         });
     }
 
-
+    const togglePasswordVisibility = () => {
+        setPasswordVisible(!passwordVisible);
+    };
 
     const loginClickHandler = (e) => {
         console.log(e.target.textContent)
@@ -80,7 +84,7 @@ const Login = ({ setProfileData }) => {
             Login
             <div id="loginResult">
                 {result === false ? <>Wrong Email/Username or password</> :
-                    result === null ? <>Email/Username or password missing.</> :
+                    result === "" ? <>Email/Username or password missing.</> :
                         result === "error" ? <>Server error, try it again few secound later.</> : <></>}
             </div>
             <div>
@@ -94,10 +98,14 @@ const Login = ({ setProfileData }) => {
                     Password:
                 </div>
 
-                <input type="password"
+                <input 
+                    type={passwordVisible ? "text" : "password"}
                     onChange={(e) => { passwordHandler(e) }}
                     onKeyDown={(e) => { handleKeyPress(e) }}>
                 </input>
+                <button onClick={togglePasswordVisibility}>
+                    {passwordVisible ? "Hide" : "Show"}
+                </button>
             </div>
 
             <div>

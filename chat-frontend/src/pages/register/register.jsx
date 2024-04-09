@@ -1,19 +1,40 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Box, Grid } from "@mui/material";
+import "./register.css";
+import Eye from "../../icons/eye.png"
+import Hide from "../../icons/hide.png"
+
+
 
 const Registration = () => {
 
+    const [registrationResult, setRegistrationResult] = useState(null);
+    const [serverErrorMessage, setServerErrorMessage] = useState(null);
+
     const [Username, setUsername] = useState(null);
     const [UsernameResult, setUsernameResult] = useState(null);
+    const [UsernameInfoBox, setUsernameInfoBox] = useState(null);
 
     const [Email, setEmail] = useState(null);
     const [EmailResult, setEmailResult] = useState(null);
+    const [EmailInfoBox, setEmailInfoBox] = useState(null);
 
     const [Password, setPassword] = useState(null);
-    const [PasswordConfirm, setPasswordConfirm] = useState(null);
     const [PasswordResult, setPasswordResult] = useState(null);
+    const [PasswordInfoBox, setPasswordInfoBox] = useState(null);
+
+    const [PasswordConfirm, setPasswordConfirm] = useState(null);
+    const [PasswordConfirmValue, setPasswordConfirmValue] = useState(null);
+
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [passwordConfirmVisible, setPasswordConfirmVisible] = useState(false);
+
+    const [Firstname, setFirstname] = useState(null);
+    const [FirstnameResult, setFirstnameResult] = useState(null);
+
+    const [Lastname, setLastname] = useState(null);
+    const [LastnameResult, setLastnameResult] = useState(null);
 
     const navigate = useNavigate();
 
@@ -28,6 +49,21 @@ const Registration = () => {
         }
 
     }
+
+    const registrationFetch = async (data) => {
+
+        const res = await fetch('api/Auth/Register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+
+        return res;
+
+    }
+
 
     const isEmailValidFetch = async (email) => {
 
@@ -60,7 +96,7 @@ const Registration = () => {
             }
 
         } else {
-            setEmailResult(null)
+            setEmailResult("")
         }
 
     }
@@ -105,7 +141,6 @@ const Registration = () => {
 
     const usernameValidator = async (e) => {
         let input = e.target.value;
-
         if (isUsernameLengthValid(input)) {
             const isUsed = await isUsernameUsed(input);
             if (!isUsed) {
@@ -118,7 +153,7 @@ const Registration = () => {
     }
 
     const isUsernameLengthValid = (username) => {
-        return username === "" ? setUsernameResult(null) :
+        return username === "" ? setUsernameResult("") :
             username.length < 5 ? setUsernameResult("short") :
                 username.length > 12 ? setUsernameResult("large") :
                     true;
@@ -135,26 +170,47 @@ const Registration = () => {
         }
     }
 
-    const passwordValidator = (e) => {
-
-        let input = e.target.value;
-
+    const passwordValidator = (input) => {
+        let localPassRes = 0;
         if (isPasswordLengthValid(input)) {
+
             if (isPasswordValidChars(input)) {
-                setPasswordResult("ok");
+                localPassRes++;
+                setPasswordResult(true);
                 setPassword(input);
+
             } else {
                 setPasswordResult("notValidChar");
+                setPassword(input);
             }
         }
+
+        if (input !== PasswordConfirmValue) {
+            console.log('asd')
+            setPasswordConfirm(false);
+        } else if (input === PasswordConfirmValue && localPassRes === 1) {
+            setPasswordConfirm(true);
+            console.log('asd1')
+        }
+        localPassRes = 0;
     }
 
     const isPasswordLengthValid = (password) => {
-
-        return password === "" ? setPasswordResult(null) :
-            password.length < 6 ? setPasswordResult("short") :
-                password.length > 30 ? setPasswordResult("long") :
-                    true;
+        if (password === null) {
+            return false;
+        }
+        if (password === "") {
+            setPasswordResult("");
+            return false;
+        } else if (password.length < 2) {  //for demo
+            setPasswordResult("short");
+            return false;
+        } else if (password.length > 30) {
+            setPasswordResult("long");
+            return false;
+        } else {
+            return true;
+        }
     }
 
     const isPasswordValidChars = (password) => {
@@ -170,19 +226,34 @@ const Registration = () => {
         return false;
     }
 
-    const passwordCheck = (e) => {
-        console.log(Password)
-        console.log(e.target.value)
-        if (Password === e.target.value) {
-            setPasswordResult(true);
-            setPasswordConfirm(e.target.value)
+    const passwordCheck = () => {
+
+        if (Password === PasswordConfirmValue && PasswordResult) {
+            setPasswordConfirm(true);
         } else {
-            setPasswordResult(false);
+            setPasswordConfirm(false);
+        }
+        console.log(Password, PasswordConfirmValue)
+
+
+    }
+
+    const saveConfirmPass = (e) => {
+        let input = e.target.value;
+        console.log(input)
+        if (input === Password) {
+            setPasswordConfirm(true);
+            setPasswordConfirmValue(input);
+        } else {
+            setPasswordConfirm(false);
+            setPasswordConfirmValue(input);
         }
     }
 
+
+
     const handlePaste = (e) => {
-        e.preventDefault(); // Megállítja a beillesztési eseményt
+        e.preventDefault();
     };
 
     const togglePasswordVisibility = () => {
@@ -193,104 +264,326 @@ const Registration = () => {
         setPasswordConfirmVisible(!passwordConfirmVisible);
     };
 
+
+    const isFirstnameValid = (e) => {
+        const input = e.target.value;
+
+        if (input !== "") {
+            const pattern = /\d/;
+            if (!pattern.test(input)) {
+                setFirstname(input.trim());
+                setFirstnameResult(true);
+            } else {
+                setFirstnameResult(false);
+            }
+
+        } else {
+            setFirstname(null);
+            setFirstnameResult("");
+        }
+    }
+
+    const isLastnameValid = (e) => {
+        const input = e.target.value;
+
+        if (input !== "") {
+            const pattern = /\d/;
+            if (!pattern.test(input)) {
+                setLastname(input.trim());
+                setLastnameResult(true);
+            } else {
+                setLastnameResult(false);
+            }
+        } else {
+            setLastname(null);
+            setLastnameResult("");
+        }
+
+    }
+
+
+    const registrationHandler = async () => {
+
+        const data = {
+            "email": Email,
+            "username": Username,
+            "password": Password,
+            "role": "user",
+            "firstName": Firstname,
+            "lastName": Lastname
+        }
+
+        const res = await registrationFetch(data);
+
+        if (res.status === 201) {
+            setRegistrationResult(true);
+        } else {
+            setRegistrationResult(false);
+            const responseBody = await res.text();
+            console.log(JSON.parse(responseBody))
+            setServerErrorMessage(JSON.parse(responseBody));
+        }
+    }
+
+    const serverErrorHandler = () => {
+
+        setRegistrationResult(null);
+        setPasswordConfirmValue(null);
+        setPasswordConfirm(null);
+
+        for (let key in serverErrorMessage) {
+            if (key.includes("Password")) {
+                setPassword(null);
+                setPasswordResult(false);
+                setPasswordInfoBox(serverErrorMessage[key]);
+            } else if (key.includes("Email")) {
+                setEmail(null);
+                setEmailResult(false);
+                setEmailInfoBox(serverErrorMessage[key]);
+            } else if (key.includes("User")) {
+                setUsername(null);
+                setUsernameResult(false);
+                setUsernameInfoBox(serverErrorMessage[key]);
+            }
+        }
+    }
+
     return (
-        <div id="registerContainer">
-
-            <div id="registrationBox">
-                Registration
-            </div>
-
-            <div>
-                Username
-            </div>
-            <div>
-                <input type="text"
-                    onBlur={(e) => usernameValidator(e)}
-                    defaultValue={Username !== null ? Username : ""}
-                    onChange={(e) => setUsername(e.target.value)}
-                ></input>
-            </div>
-            <div id="usernameInfobox">
-                {
-                    UsernameResult === null ? <span>Please select username!</span> :
-                        UsernameResult === true ? <span>Valid Username</span> :
-                            UsernameResult === "large" ? <span>Too long username, max size 12 char.</span> :
-                                UsernameResult === "short" ? <span>Too short username, min size 5 char.</span> :
-                                    <span>The username is already in use!</span>
-                }
-
-            </div>
-
-            <div>
-                Email
-            </div>
-            <div>
-                <input type="text" onBlur={(e) => emailValidator(e)}
-                    defaultValue={Email !== null ? Email : ""}></input>
-            </div>
-            <div id="emailInfobox">
-                {
-                    EmailResult === null ? <span>Please select email!</span> :
-                        EmailResult === true ? <span>Valid email</span> :
-                            EmailResult === "charNotValid" ? <span>Invalid email format!</span> :
-                                <span>The email is already in use!</span>
-                }
-
-            </div>
-
-            <div>
-                Password
-            </div>
-            <div>
-                <input type={passwordVisible ? "text" : "password"}
-                    onBlur={(e) => passwordValidator(e)}
-                    defaultValue={Password !== null ? Password : ""} ></input>
-                <button onClick={togglePasswordVisibility}>
-                    {passwordVisible ? "Hide" : "Show"}
-                </button>
-            </div>
-            <div id="passwordInfobox">
-                {
-                    PasswordResult === null ? <span>Please select password!</span> :
-                        PasswordResult === "ok" ? <span>Valid password</span> :
-                            PasswordResult === "short" ? <span>Too short password, min size 6 char.</span> :
-                                PasswordResult === "long" ? <span>Too long password, max size 30 char.</span> :
-                                    PasswordResult === "notValidChar" ? <span>Password must contains number spec char and Upper char!</span> :
-                                        PasswordResult === true ? <span>Password valid and matched!</span> :
-                                            <span>Passwords not match!</span>
-                }
-            </div>
-            <div>
-                Password confirmation
-            </div>
-            <div>
-                <input type={passwordConfirmVisible ? "text" : "password"}
-                    onChange={(e) => passwordCheck(e)} onPaste={handlePaste}
-                    defaultValue={PasswordConfirm !== null ? PasswordConfirm : ""}>
-                </input>
-                <button onClick={togglePasswordConfirmVisibility}>
-                    {passwordConfirmVisible ? "Hide" : "Show"}
-                </button>
-            </div>
-            <div id="passwordInfobox">
-                {
-                    PasswordResult === false ? <span>Passwords not match!</span> : <></>
-                }
-            </div>
-
+        <>
             {
-                PasswordResult === true && EmailResult === true && UsernameResult === true ?
-                    (
-                        <div>
-                            <button onClick={() => navigate("/")}>Back to Home</button>
-                            <button onClick={() => navigateHandler()}>Next</button>
-                        </div>
+                registrationResult === null ? (
+                    <Box height="100vh" display="flex" justifyContent="center" alignItems="center">
+                        <Grid container spacing={2}>
+                            <Grid item xs={4}>
+
+                            </Grid>
+                            <Grid item xs={4}>
+
+                                <div id="registerContainer">
+
+                                    <div id="registrationBox">
+                                        <h2>Registration</h2>
+                                    </div>
+                                    <div id="regContextContainer">
+                                        <div id="registrationNameContainer">
+                                            <div className={FirstnameResult === null ? "registrationCheckNameNull" :
+                                                FirstnameResult === true ? "registrationCheckNameTrue" :
+                                                    "registrationCheckNameFalse"
+                                            }>
+                                                <input
+                                                    type="text"
+                                                    placeholder="First name"
+                                                    onBlur={(e) => isFirstnameValid(e)}
+                                                    className="registrationNameInput"
+                                                    style={{ paddingRight: '30px' }}
+                                                    defaultValue={Firstname !== null ? Firstname : ""}>
+
+                                                </input>
+                                                {
+                                                    FirstnameResult === true ? <span>✔</span> :
+                                                        FirstnameResult === null ? <></> :
+                                                            <>❗</>
+                                                }
+                                            </div>
+                                            <div className={LastnameResult === null ? "registrationCheckNameNull" :
+                                                LastnameResult === true ? "registrationCheckNameTrue" :
+                                                    "registrationCheckNameFalse"
+                                            }>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Last name"
+                                                    className="registrationNameInput"
+                                                    style={{ paddingRight: '30px' }}
+                                                    onBlur={(e) => isLastnameValid(e)}
+                                                    defaultValue={Lastname !== null ? Lastname : ""}>
+                                                </input>
+                                                {
+                                                    LastnameResult === true ? <span>✔</span> :
+                                                        LastnameResult === null ? <span></span> :
+                                                            <span>❗</span>
+                                                }
+                                            </div>
+
+                                        </div>
+                                        <div id="registrationUserDataContainer">
+                                            <div className={UsernameResult === null ? "registrationCheckNull" :
+                                                UsernameResult === true ? "registrationCheckTrue" :
+                                                    "registrationCheckFalse"
+                                            }>
+                                                <input type="text"
+                                                    onBlur={(e) => usernameValidator(e)}
+                                                    placeholder="Username"
+                                                    className="registrationInput"
+                                                    onChange={(e) => setUsername(e.target.value)}
+                                                    defaultValue={Username !== null ? Username : ""}
+                                                ></input>
+                                                {
+                                                    UsernameResult === true ? <span>✔</span> :
+                                                        UsernameResult === null ? <span></span> :
+                                                            <span>❗</span>
+                                                }
+                                            </div>
+                                            <div id="usernameInfobox">
+                                                {
+                                                    UsernameResult === null ? <span>Please select username!</span> :
+                                                        UsernameResult === true ? <span>Valid Username</span> :
+                                                            UsernameResult === "large" ? <span>Too long username, max size 12 char.</span> :
+                                                                UsernameResult === "short" ? <span>Too short username, min size 5 char.</span> :
+                                                                    UsernameResult === "" ? <span>Please select username!</span> :
+                                                                        UsernameInfoBox !== null ? <span>{UsernameInfoBox}</span> :
+                                                                            <span>The username is already in use!</span>
+                                                }
+
+                                            </div>
+
+                                            <div className={EmailResult === null ? "registrationCheckNull" :
+                                                EmailResult === true ? "registrationCheckTrue" :
+                                                    "registrationCheckFalse"
+                                            }>
+                                                <input type="text" onBlur={(e) => emailValidator(e)}
+                                                    placeholder="Email"
+                                                    className="registrationInput"
+                                                    defaultValue={Email !== null ? Email : ""}>
+                                                </input>
+                                                {
+                                                    EmailResult === true ? <span>✔</span> :
+                                                        EmailResult === null ? <span></span> :
+                                                            <span>❗</span>
+                                                }
+                                            </div>
+                                            <div id="emailInfobox">
+                                                {
+                                                    EmailResult === null ? <span>Please select email!</span> :
+                                                        EmailResult === true ? <span>Valid email</span> :
+                                                            EmailResult === "charNotValid" ? <span>Invalid email format!</span> :
+                                                                EmailResult === "" ? <span>Please select email!</span> :
+                                                                    EmailInfoBox !== null ? <span>{EmailInfoBox}</span> :
+                                                                        <span>The email is already in use!</span>
+                                                }
+
+                                            </div>
+                                            <div className="registrationPasswordContainer">
+                                                <div className={PasswordResult === null ? "registrationCheckNull" :
+                                                    PasswordResult === true ? "registrationCheckTrue" :
+                                                        "registrationCheckFalse"
+                                                }>
+                                                    <input type={passwordVisible ? "text" : "password"}
+                                                        placeholder="New password"
+                                                        onChange={(e) => passwordValidator(e.target.value)}
+                                                        onBlur={(e) => { passwordValidator(e.target.value) }}
+                                                        className="registrationInput"
+                                                        defaultValue={Password !== null ? Password : ""}>
+                                                    </input>
+                                                    {
+                                                        PasswordResult === true ? <span>✔</span> :
+                                                            PasswordResult === null ? <span></span> :
+                                                                <span>❗</span>
+                                                    }
+
+                                                </div>
+                                                <div onClick={togglePasswordVisibility}
+                                                    className="registerShowButton">
+                                                    {passwordVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
+                                                        <img className="showIcon" src={Eye} alt="Show password Icon" />}
+                                                </div>
+
+                                            </div>
+
+                                            <div id="registerPasswordInfoBox">
+                                                {PasswordInfoBox !== null ? <span>{PasswordInfoBox}</span> : <></>}
+                                            </div>
+
+                                            <div className="registrationPasswordContainer">
+                                                <div className={PasswordConfirm === null ? "registrationCheckNull" :
+                                                    PasswordConfirm === "ok" ? "registrationCheckTrue" :
+                                                        PasswordConfirm === true ? "registrationCheckTrue" :
+                                                            "registrationCheckFalse"
+                                                }>
+                                                    <input type={passwordConfirmVisible ? "text" : "password"}
+                                                        placeholder="Confirm password"
+                                                        onChange={(e) => saveConfirmPass(e)} onPaste={handlePaste}
+                                                        onBlur={() => { passwordCheck() }}
+                                                        className="registrationInput">
+                                                    </input>
+
+                                                </div>
+                                                <div onClick={togglePasswordConfirmVisibility}
+                                                    className="registerShowButton">
+                                                    {
+                                                        passwordConfirmVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
+                                                            <img className="showIcon" src={Eye} alt="Show password Icon" />
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <div id="passwordConfirmInfobox">
+                                                {
+                                                    PasswordResult === false ? <span>Passwords not match!</span> : <></>
+                                                }
+                                            </div>
+
+                                            {
+                                                PasswordResult === true && EmailResult === true && UsernameResult === true && PasswordConfirm === true ?
+                                                    (
+                                                        <div>
+                                                            <button onClick={() => navigate("/")}>Back to Home</button>
+                                                            <button onClick={() => registrationHandler()}>Submit</button>
+                                                        </div>
+                                                    ) : (
+                                                        <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
+
+                                                    )
+                                            }
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                            </Grid>
+                            <Grid item xs={4}>
+
+                            </Grid>
+                        </Grid>
+                    </Box>
+
+                ) :
+                    registrationResult === true ? (
+                        <>
+                            Succesfull registration! Redirected log in page...
+                            or
+                            Log in <div onClick={() => { navigate("/login") }}>HERE.</div>
+                        </>
                     ) : (
-                        <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
+                        <>
+                            <div id="regResContainer">
+                                <h2>
+                                    UnSuccesfull registration!
+                                </h2>
+                                <h4>
+                                    Error(s):
+                                </h4>
+                                {serverErrorMessage &&
+                                    Object.entries(serverErrorMessage).map(([key, value], index) => (
+                                        <div key={index}>
+                                            <strong>{key}:</strong>
+                                            {value.map((errorMessage, subIndex) => (
+                                                <div key={subIndex}>
+                                                    {errorMessage}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ))
+                                }
+                            </div>
+
+                            <div><span onClick={() => { serverErrorHandler() }}>Back to the registration</span> or <span>home page</span>.</div>
+
+                        </>
                     )
             }
 
-        </div>
+        </>
+
     )
 }
 

@@ -20,7 +20,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login setProfileData={setProfileData}/>} />
               <Route path="/registration" element={<Register />} />
-              <Route path="/chat" element={<Chat />} />
+              <Route path="/chat" element={<Chat profileData={profileData}/>} />
             </Routes>
             
           </div>

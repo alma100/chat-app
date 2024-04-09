@@ -68,6 +68,7 @@ public class AuthService : IAuthService
 
         foreach (var error in result.Errors)
         {
+            Console.WriteLine(error.Description);
             authResult.ErrorMessages.Add(error.Code, error.Description);
         }
 
