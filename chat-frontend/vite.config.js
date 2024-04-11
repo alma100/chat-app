@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      server: { https: true },
       watch: {
         usePolling: true,
       },

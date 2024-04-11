@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
-
+import Eye from "../../icons/eye.png"
+import Hide from "../../icons/hide.png"
+import "./login.css"
 
 
 const Login = ({ setProfileData }) => {
@@ -40,9 +42,8 @@ const Login = ({ setProfileData }) => {
     };
 
     const loginClickHandler = (e) => {
-        console.log(e.target.textContent)
         e.target.textContent === "Back" ? navigate("/") :
-            e.target.textContent === "Login" ? loginRequestHandler() :
+            e.target.textContent === "Log In" ? loginRequestHandler() :
                 navigate("/registration");
     }
 
@@ -76,44 +77,71 @@ const Login = ({ setProfileData }) => {
         }
     }
 
+    function onSignIn(googleUser) {
+        var profile = googleUser.getBasicProfile();
+        console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+        console.log('Name: ' + profile.getName());
+        console.log('Image URL: ' + profile.getImageUrl());
+        console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
+      }
     return (
         <>
-            <div onClick={(e) => loginClickHandler(e)}>
-                Back
-            </div>
-            Login
-            <div id="loginResult">
-                {result === false ? <>Wrong Email/Username or password</> :
-                    result === "" ? <>Email/Username or password missing.</> :
-                        result === "error" ? <>Server error, try it again few secound later.</> : <></>}
-            </div>
-            <div>
-                <div>
-                    Username or Email:
+            <div id="loginPasswordContainer">
+
+                <h2>
+                    Log into
+                </h2>
+                <div id="loginResult">
+                    {result === false ? <>Wrong Email/Username or password</> :
+                        result === "" ? <>Email/Username or password missing.</> :
+                            result === "error" ? <>Server error, try it again few secound later.</> : <></>}
                 </div>
-                <input type="text" onChange={(e) => { emailHandler(e); }}></input>
-            </div>
-            <div>
-                <div>
-                    Password:
+                <div className="loginInput">
+                    <input
+                        className="registrationInput"
+                        type="text"
+                        onChange={(e) => { emailHandler(e); }}
+                        placeholder="Username or Emails">
+                    </input>
+                </div>
+                <div id="loginPassContainer">
+                    <div className="loginInput">
+                        <input
+                            placeholder="Password"
+                            type={passwordVisible ? "text" : "password"}
+                            className="registrationInput"
+                            onChange={(e) => { passwordHandler(e) }}
+                            onKeyDown={(e) => { handleKeyPress(e) }}>
+                        </input>
+                        {password && (
+                            <span onClick={togglePasswordVisibility}>
+                                {passwordVisible ? (
+                                    <img className="loginShowIcon" src={Hide} alt="Hide password Icon" />
+                                ) : (
+                                    <img className="loginShowIcon" src={Eye} alt="Show password Icon" />
+                                )}
+                            </span>
+                        )}
+                    </div>
+
                 </div>
 
-                <input 
-                    type={passwordVisible ? "text" : "password"}
-                    onChange={(e) => { passwordHandler(e) }}
-                    onKeyDown={(e) => { handleKeyPress(e) }}>
-                </input>
-                <button onClick={togglePasswordVisibility}>
-                    {passwordVisible ? "Hide" : "Show"}
-                </button>
-            </div>
+                <div>
+                    <button onClick={(e) => loginClickHandler(e)}>Log In</button>
+                </div>
 
-            <div>
-                <button onClick={(e) => loginClickHandler(e)}>Login</button>  or <button onClick={(e) => loginClickHandler(e)}>SingIn</button>
-            </div>
+                <div id="loginExtraOptions">
+                    <div>
+                        Forget account?
+                    </div>
+                    <div>
+                        -
+                    </div>
+                    <div onClick={(e) => loginClickHandler(e)}>
+                        Sing Up to ...
+                    </div>
+                </div>
 
-            <div>
-                Forget your password? Request new one here.
             </div>
         </>
 

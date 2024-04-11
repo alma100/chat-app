@@ -177,13 +177,14 @@ const Registration = () => {
             if (isPasswordValidChars(input)) {
                 localPassRes++;
                 setPasswordResult(true);
-                setPassword(input);
+                
 
             } else {
                 setPasswordResult("notValidChar");
-                setPassword(input);
+                
             }
         }
+        setPassword(input);
 
         if (input !== PasswordConfirmValue) {
             console.log('asd')
@@ -361,10 +362,11 @@ const Registration = () => {
 
                                 <div id="registerContainer">
 
-                                    <div id="registrationBox">
-                                        <h2>Registration</h2>
-                                    </div>
+
                                     <div id="regContextContainer">
+                                        <div id="registrationBox">
+                                            <h2>Registration</h2>
+                                        </div>
                                         <div id="registrationNameContainer">
                                             <div className={FirstnameResult === null ? "registrationCheckNameNull" :
                                                 FirstnameResult === true ? "registrationCheckNameTrue" :
@@ -375,7 +377,6 @@ const Registration = () => {
                                                     placeholder="First name"
                                                     onBlur={(e) => isFirstnameValid(e)}
                                                     className="registrationNameInput"
-                                                    style={{ paddingRight: '30px' }}
                                                     defaultValue={Firstname !== null ? Firstname : ""}>
 
                                                 </input>
@@ -393,7 +394,6 @@ const Registration = () => {
                                                     type="text"
                                                     placeholder="Last name"
                                                     className="registrationNameInput"
-                                                    style={{ paddingRight: '30px' }}
                                                     onBlur={(e) => isLastnameValid(e)}
                                                     defaultValue={Lastname !== null ? Lastname : ""}>
                                                 </input>
@@ -474,17 +474,23 @@ const Registration = () => {
                                                         className="registrationInput"
                                                         defaultValue={Password !== null ? Password : ""}>
                                                     </input>
+                                                    
                                                     {
                                                         PasswordResult === true ? <span>✔</span> :
                                                             PasswordResult === null ? <span></span> :
                                                                 <span>❗</span>
                                                     }
 
-                                                </div>
-                                                <div onClick={togglePasswordVisibility}
-                                                    className="registerShowButton">
-                                                    {passwordVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
-                                                        <img className="showIcon" src={Eye} alt="Show password Icon" />}
+                                                    {
+                                                        Password && (
+                                                            <span onClick={togglePasswordVisibility}
+                                                            >
+                                                                {passwordVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
+                                                                    <img className="showIcon" src={Eye} alt="Show password Icon" />}
+                                                            </span>
+                                                        )
+                                                    }
+
                                                 </div>
 
                                             </div>
@@ -506,14 +512,18 @@ const Registration = () => {
                                                         className="registrationInput">
                                                     </input>
 
-                                                </div>
-                                                <div onClick={togglePasswordConfirmVisibility}
-                                                    className="registerShowButton">
                                                     {
-                                                        passwordConfirmVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
-                                                            <img className="showIcon" src={Eye} alt="Show password Icon" />
+                                                        PasswordConfirmValue && (
+                                                            <span onClick={togglePasswordConfirmVisibility}
+                                                            >
+                                                                {passwordConfirmVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
+                                                                    <img className="showIcon" src={Eye} alt="Show password Icon" />}
+                                                            </span>
+                                                        )
                                                     }
+
                                                 </div>
+                                                
                                             </div>
 
                                             <div id="passwordConfirmInfobox">
@@ -526,7 +536,6 @@ const Registration = () => {
                                                 PasswordResult === true && EmailResult === true && UsernameResult === true && PasswordConfirm === true ?
                                                     (
                                                         <div>
-                                                            <button onClick={() => navigate("/")}>Back to Home</button>
                                                             <button onClick={() => registrationHandler()}>Submit</button>
                                                         </div>
                                                     ) : (

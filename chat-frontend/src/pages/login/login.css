@@ -1,0 +1,56 @@
+#loginPasswordContainer{
+    position:relative;
+    margin-top: 15%;
+    margin-left: 30%;
+    height: 300px;
+    width: 440px;
+    min-width: 440px;
+    flex-direction: column;
+    align-items: center;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 3px 3px 3px 3px rgba(0, 0, 0, 0.2);
+    border: 1px solid #000;
+    border-radius: 8px;
+}
+
+
+.loginInput {
+    width: 230px;
+    padding: 4px;
+    border-color: gray;
+    border-radius: 11px;
+    border-width: 2px;
+    border-style: inset;
+    display: flex;
+    align-items: center;
+    height: 25px;
+}
+
+
+#loginPassContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    width: 300px;
+    
+}
+
+.loginShowIcon {
+    width: 20px; 
+    height: 20px; 
+    margin-left: 5px; 
+    margin-top:2px;
+}
+
+#loginExtraOptions{
+    display: flex;
+    justify-content: space-between;
+    width: 240px;
+    min-width: 240px;
+    padding-top: 10px;
+}

@@ -1,19 +1,20 @@
 import { Box, Grid } from "@mui/material";
+import "./navbar.css"
 
 const Navbar = () => {
 
     return(
         <>
-         <Box className="navbar">
+         <Box className="navbarBox">
           <Grid container alignItems="center">
             <Grid item xs={10} >
               asd
             </Grid>
             <Grid item xs={1} >
-                asd
+              profile
             </Grid>
-            <Grid xs={1} >
-              asd
+            <Grid item xs={1} >
+              Logout
             </Grid>
            
           </Grid>

@@ -1,0 +1,71 @@
+.chatBox{
+    width: 100%;
+    height: 100%;
+}
+
+#chatField{
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+    border: 2px solid black;
+    position: relative;
+}
+
+#searchBarContainer{
+    display: flex;
+    height: 10vh;
+    align-items: center;
+    width: 100%;
+}
+
+#searchResultContainer{
+    height: 80vh;
+}
+
+#chatSearchButton{
+    padding-left: 30pxs;
+}
+
+.chatOwnMessage,
+.chatRecivedMessage {
+    width: auto;
+    max-width: 230px;
+    padding: 5px;
+    text-align: left;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    height: auto;
+}
+
+.chatOwnMessage{
+    border: 2px solid green;
+    margin-right: 4px;
+}
+
+.chatRecivedMessage{
+    border: 2px solid red;
+    margin-left: 4px;
+}
+
+
+.chatOwnMessageWrapper,
+.chatMessageWrapper{
+    display: flex;
+    flex-direction: row;
+    
+}
+
+.chatOwnMessageWrapper{
+    align-self: flex-end;
+}
+
+.chatMessageWrapper{
+    align-self: flex-start;
+}
+
+
+.chatuserIcon{
+    width: 40px;
+    height: 40px;
+    margin-right: 5px;
+}
