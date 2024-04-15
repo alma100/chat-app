@@ -7,6 +7,8 @@ import User from "../../icons/user.png"
 
 const Chat = ({profileData}) => {
 
+    const [searchFieldValue, setSearchFieldValue] = useState(null);
+
     const [messageInput, setMessageInput] = useState('');
     const [messageHistory, setMessageHistory] = useState([]);
     let userId = profileData === null ? "0" : profileData.id;
@@ -24,6 +26,12 @@ const Chat = ({profileData}) => {
     }, [lastMessage]);
 
 
+    const searchFetch = (name) => {
+        fetch(`/api/Chat/getUserByName?name=${name}`).then(
+            res => res.json()
+        )
+    }
+
     const sendButtonHandler = () => {
         if (messageInput !== "") {
             let message = {
@@ -37,6 +45,12 @@ const Chat = ({profileData}) => {
         setMessageInput("");      
     }
 
+
+    const chatSearchHandler = () => {
+        searchFetch(searchFieldValue).then(res=> {
+            console.log(res)
+        })
+    }
     
     return (
         <>
@@ -45,9 +59,11 @@ const Chat = ({profileData}) => {
                 <Grid container alignItems="center">
                     <Grid item xs={4}>
                         <div id="searchBarContainer">
-                            <input type="text">
+                            <input type="text"
+                                onChange={(e)=> {setSearchFieldValue(e.target.value)}}>
                             </input>
-                            <div id="chatSearchButton">
+                            <div id="chatSearchButton"
+                                onClick={()=> {chatSearchHandler()}}>
                                 Search
                             </div>
                         </div>
