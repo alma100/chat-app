@@ -1,4 +1,4 @@
-﻿namespace chat_HTTP_server.Model;
+﻿namespace chat_WebSockets_server.Model;
 
 public class Chat
 {

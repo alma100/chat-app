@@ -5,13 +5,12 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import "./chat.css"
 import User from "../../icons/user.png"
 
-const Chat = () => {
+const Chat = ({profileData}) => {
 
     const [messageInput, setMessageInput] = useState('');
     const [messageHistory, setMessageHistory] = useState([]);
-    const [updateMessage, setUpdateMessage] = useState(false);
-
-    const WS_URL = "ws://localhost:5102";
+    let userId = profileData === null ? "0" : profileData.id;
+    const WS_URL = "ws://localhost:5102/ws";
     const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL);
 
     useEffect(() => {
@@ -20,21 +19,25 @@ const Chat = () => {
             console.log(messageObject);
             setMessageHistory(prevMessages => [...prevMessages, messageObject]);
         }
+
+        console.log("aísad")
     }, [lastMessage]);
 
 
     const sendButtonHandler = () => {
         if (messageInput !== "") {
             let message = {
-                userId: 1,
-                data: messageInput
+                UserId: userId,
+                Content : messageInput,
+                ChatId: "10"
             }
             sendMessage(JSON.stringify(message));
         }
 
-        setMessageInput("");
+        setMessageInput("");      
     }
 
+    
     return (
         <>
             <Navbar />
@@ -55,13 +58,13 @@ const Chat = () => {
                     <Grid item xs={4}>
                         <div id="chatField">
                             {messageHistory.map((message, index) => {
-                                if (message.userId === 0) {
-                                    return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.data}</div>
-                                        <span className="chatOwnProfile"><img className="chatuserIcon" src={User} alt="Show password Icon" /></span></div>
+                                if (message.UserId === userId) {
+                                    return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.Content}</div>
+                                        <span className="chatOwnProfile"><img className="ownChatuserIcon" src={User} alt="Show password Icon" /></span></div>
                                 } else {
                                     return <div className="chatMessageWrapper"><span className="chatOwnProfile">
                                         <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
-                                        <div key={index} className="chatRecivedMessage">{message.data}</div>
+                                        <div key={index} className="chatRecivedMessage">{message.Content}</div>
                                     </div>
                                 }
 

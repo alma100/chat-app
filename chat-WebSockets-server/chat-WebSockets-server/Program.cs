@@ -1,53 +1,38 @@
-using System.Net.WebSockets;
-using System.Text;
+using chat_WebSockets_server.Context;
+using chat_WebSockets_server.Repository;
+using chat_WebSockets_server.Service;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<ChatService>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+
+AddDbContext();
+AddServie();
 var app = builder.Build();
 app.UseWebSockets();
 
-app.MapGet("/", async (HttpContext context, ChatService chatService) =>
-{
-    if (context.WebSockets.IsWebSocketRequest)
-    {
-        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        await chatService.HandleWebSocketConnection(webSocket);
-    }
-    else
-    {
-        context.Response.StatusCode = 400;
-        await context.Response.WriteAsync("Expected a WebSocket request");
-    }
-});
-
+app.MapControllers();
 app.Run();
 
-public class ChatService
+
+#region AddDbContext()
+
+void AddDbContext()
 {
-    private readonly List<WebSocket> _sockets = new();
-    
-    public async Task HandleWebSocketConnection(WebSocket socket)
-    {
-        _sockets.Add(socket);
-        var buffer = new byte[1024 * 2];
-        while (socket.State == WebSocketState.Open)
-        {
-            var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), default);
-            var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            Console.WriteLine(message);
-            if (result.MessageType == WebSocketMessageType.Close)
-            {
-                
-                await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, default);
-                break;
-            }
-            
-            foreach (var s in _sockets)
-            {
-                await s.SendAsync(buffer[..result.Count], WebSocketMessageType.Text, true, default);
-            }
-        }
-        _sockets.Remove(socket);
-    }
+    builder.Services.AddDbContext<ChatContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Chat") ?? throw new InvalidOperationException("Connection string 'Chat' not found.")));
 }
 
+#endregion
+
+#region AddService
+
+void AddServie()
+{
+    builder.Services.AddScoped<IChatService, ChatService>();
+    builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+}
+
+#endregion

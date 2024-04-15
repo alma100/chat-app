@@ -59,6 +59,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseWebSockets();
 app.MapControllers();
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -75,7 +77,7 @@ app.Run();
 void AddDbContext()
 {
     builder.Services.AddDbContext<ChatContext>(options =>
-        options.UseSqlServer(builder.Configuration.GetConnectionString("Chat") ?? throw new InvalidOperationException("Connection string 'Hospital' not found.")));
+        options.UseSqlServer(builder.Configuration.GetConnectionString("Chat") ?? throw new InvalidOperationException("Connection string 'Chat' not found.")));
 }
 
 #endregion

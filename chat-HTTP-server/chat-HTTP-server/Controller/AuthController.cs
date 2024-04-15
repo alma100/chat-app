@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
             {
                 
                 setTokenCookie(authResult.Token, "access_token");
-                return Ok(new AuthResponse(authResult.Email, authResult.UserName));
+                return Ok(new AuthResponse(authResult.Email, authResult.UserName, authResult.Id));
             }
 
             return Unauthorized();

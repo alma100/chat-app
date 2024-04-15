@@ -24,13 +24,13 @@ namespace chat_HTTP_server.Migrations
 
             modelBuilder.Entity("ChatUser", b =>
                 {
-                    b.Property<int>("ChatsChatId")
-                        .HasColumnType("int");
+                    b.Property<string>("ChatsId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("ChatsChatId", "UsersId");
+                    b.HasKey("ChatsId", "UsersId");
 
                     b.HasIndex("UsersId");
 
@@ -172,13 +172,10 @@ namespace chat_HTTP_server.Migrations
 
             modelBuilder.Entity("chat_HTTP_server.Model.Chat", b =>
                 {
-                    b.Property<int>("ChatId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChatId"));
-
-                    b.HasKey("ChatId");
+                    b.HasKey("Id");
 
                     b.ToTable("Chat");
                 });
@@ -188,8 +185,9 @@ namespace chat_HTTP_server.Migrations
                     b.Property<string>("MessageId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int?>("ChatId")
-                        .HasColumnType("int");
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -286,7 +284,7 @@ namespace chat_HTTP_server.Migrations
                 {
                     b.HasOne("chat_HTTP_server.Model.Chat", null)
                         .WithMany()
-                        .HasForeignKey("ChatsChatId")
+                        .HasForeignKey("ChatsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -352,7 +350,9 @@ namespace chat_HTTP_server.Migrations
                 {
                     b.HasOne("chat_HTTP_server.Model.Chat", null)
                         .WithMany("Messages")
-                        .HasForeignKey("ChatId");
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("chat_HTTP_server.Model.Chat", b =>

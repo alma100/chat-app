@@ -56,12 +56,11 @@ namespace chat_HTTP_server.Migrations
                 name: "Chat",
                 columns: table => new
                 {
-                    ChatId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1")
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Chat", x => x.ChatId);
+                    table.PrimaryKey("PK_Chat", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -174,12 +173,12 @@ namespace chat_HTTP_server.Migrations
                 name: "ChatUser",
                 columns: table => new
                 {
-                    ChatsChatId = table.Column<int>(type: "int", nullable: false),
+                    ChatsId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     UsersId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ChatUser", x => new { x.ChatsChatId, x.UsersId });
+                    table.PrimaryKey("PK_ChatUser", x => new { x.ChatsId, x.UsersId });
                     table.ForeignKey(
                         name: "FK_ChatUser_AspNetUsers_UsersId",
                         column: x => x.UsersId,
@@ -187,10 +186,10 @@ namespace chat_HTTP_server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ChatUser_Chat_ChatsChatId",
-                        column: x => x.ChatsChatId,
+                        name: "FK_ChatUser_Chat_ChatsId",
+                        column: x => x.ChatsId,
                         principalTable: "Chat",
-                        principalColumn: "ChatId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -202,7 +201,7 @@ namespace chat_HTTP_server.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ChatId = table.Column<int>(type: "int", nullable: true)
+                    ChatId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -211,7 +210,8 @@ namespace chat_HTTP_server.Migrations
                         name: "FK_Message_Chat_ChatId",
                         column: x => x.ChatId,
                         principalTable: "Chat",
-                        principalColumn: "ChatId");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

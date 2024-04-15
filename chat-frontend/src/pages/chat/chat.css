@@ -32,7 +32,7 @@
     max-width: 230px;
     padding: 5px;
     text-align: left;
-    margin-bottom: 20px;
+    
     border-radius: 8px;
     height: auto;
 }
@@ -52,6 +52,8 @@
 .chatMessageWrapper{
     display: flex;
     flex-direction: row;
+    margin-bottom: 10px;
+    margin-top: 10px;
     
 }
 
@@ -64,8 +66,18 @@
 }
 
 
-.chatuserIcon{
+.chatuserIcon,
+.ownChatuserIcon{
     width: 40px;
     height: 40px;
+    
+}
+
+.chatuserIcon{
+    margin-left: 5px;
+}
+
+.ownChatuserIcon{
     margin-right: 5px;
+    
 }
