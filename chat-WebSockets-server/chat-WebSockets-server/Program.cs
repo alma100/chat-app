@@ -1,5 +1,6 @@
 using chat_WebSockets_server.Context;
 using chat_WebSockets_server.Repository;
+using chat_WebSockets_server.Repository.UserRepository;
 using chat_WebSockets_server.Service;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,7 @@ void AddDbContext()
 void AddServie()
 {
     builder.Services.AddScoped<IChatService, ChatService>();
+    builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 }
 

@@ -8,5 +8,9 @@ public interface IUserRepository
 
     bool IsEmailValid(string email);
 
-    List<User> GetUserByName(string name);
+    List<User> GetUserByName(string name, string id);
+
+    List<User> GetUserById(List<string> id);
+    
+    List<ChatDto> GetAllChatByUserId(string id);
 }

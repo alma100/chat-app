@@ -56,7 +56,8 @@ namespace chat_HTTP_server.Migrations
                 name: "Chat",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1")
                 },
                 constraints: table =>
                 {
@@ -173,7 +174,7 @@ namespace chat_HTTP_server.Migrations
                 name: "ChatUser",
                 columns: table => new
                 {
-                    ChatsId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ChatsId = table.Column<int>(type: "int", nullable: false),
                     UsersId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
@@ -197,11 +198,12 @@ namespace chat_HTTP_server.Migrations
                 name: "Message",
                 columns: table => new
                 {
-                    MessageId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MessageId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ChatId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    ChatId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

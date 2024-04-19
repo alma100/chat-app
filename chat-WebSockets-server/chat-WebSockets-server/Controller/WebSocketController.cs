@@ -28,6 +28,19 @@ public class WebSocketController : ControllerBase
         }
     }
     
+    [Route("/ws/update")]
+    public async Task GetUserData()
+    {
+        if (HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+            await _chatService.HandleWebSocketConnection(webSocket);
+        }
+        else
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        }
+    }
     private static async Task SaveMessageToDatabase(string message)
     {
         // Adatbázis műveletek végrehajtása, pl. üzenet beszúrása az adatbázisba

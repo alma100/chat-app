@@ -15,7 +15,6 @@ public class MessageRepository : IMessageRepository
     public async void AddMessage(Message message)
     {
         message.CreatedAt = DateTime.Now;
-        message.MessageId = 1;
         await _chatContext.Message.AddAsync(message);
         await _chatContext.SaveChangesAsync();
     }

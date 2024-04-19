@@ -24,8 +24,8 @@ namespace chat_HTTP_server.Migrations
 
             modelBuilder.Entity("ChatUser", b =>
                 {
-                    b.Property<string>("ChatsId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("ChatsId")
+                        .HasColumnType("int");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
@@ -172,8 +172,11 @@ namespace chat_HTTP_server.Migrations
 
             modelBuilder.Entity("chat_HTTP_server.Model.Chat", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.HasKey("Id");
 
@@ -182,12 +185,14 @@ namespace chat_HTTP_server.Migrations
 
             modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
                 {
-                    b.Property<string>("MessageId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("ChatId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<int>("ChatId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Content")
                         .IsRequired()

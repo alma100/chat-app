@@ -2,7 +2,7 @@
 
 public class Message
 {
-    public int? MessageId { get; set; }
+    public int MessageId { get; set; }
     
     public string Content { get; set; }
     
@@ -10,5 +10,5 @@ public class Message
     
     public DateTime? CreatedAt { get; set; }
     
-    public string ChatId { get; set; }
+    public int ChatId { get; set; }
 }

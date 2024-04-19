@@ -6,5 +6,5 @@ public interface IChatService
 {
     Task HandleWebSocketConnection(WebSocket socket);
     
-    
+    static Dictionary<string, WebSocket> SocketGroups { get; set; }
 }
