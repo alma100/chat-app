@@ -10,35 +10,51 @@ using System.Text.Json;
 
 public class ChatService : IChatService
 {
-    //private readonly Dictionary<string, WebSocket> _socketGroups = new();
     
-    public static Dictionary<string, WebSocket> SocketGroups { get; set; }
-
+    
     private IMessageRepository _messageRepository;
 
     private IUserRepository _userRepository;
 
-    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository)
+    private IWebSocketManager _webSocketManager;
+
+    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository, IWebSocketManager webSocketManager)
     {
         _messageRepository = messageRepository;
         _userRepository = userRepository;
-        SocketGroups = new Dictionary<string, WebSocket>();
+        _webSocketManager = webSocketManager;
     }
 
     public async Task HandleWebSocketConnection(WebSocket socket)
     {
-
         var buffer = new byte[1024 * 2];
         while (socket.State == WebSocketState.Open)
         {
             var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), default);
             var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            Console.WriteLine(message);
-            var messageObject = JsonSerializer.Deserialize<Message>(message);
-            if (messageObject.Content == "connection request")
+            Console.WriteLine($"üzenet: {message}");
+            var messageObject = new Message();
+            if (message == null)
             {
-                Console.WriteLine("asd");
-                AddToSocketToDictionary(messageObject.UserId, socket);
+                Console.WriteLine("null üzenet");
+            }
+            if (message == "")
+            {
+                Console.WriteLine(socket);
+                Console.WriteLine("üres üzenet");
+            }
+            else
+            {
+                messageObject = JsonSerializer.Deserialize<Message>(message);
+            }
+            
+            //messageObject = JsonSerializer.Deserialize<Message>(message);
+            
+            
+            if (messageObject.Content == "connection request")
+            { 
+                Console.WriteLine("asd"); 
+                _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
                 var initRes = new { message = "connection opend" };
                 string jsonInitRes = JsonSerializer.Serialize(initRes);
                 byte[] initResBuffer = Encoding.UTF8.GetBytes(jsonInitRes);
@@ -48,9 +64,9 @@ public class ChatService : IChatService
             else
             {
                 var chatId = messageObject.ChatId;
-                var userId = messageObject.UserId;
-                AddToSocketToDictionary(userId, socket);
-                var targetusers = FindeTargetedUser(chatId);
+                //_webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
+                var users = _userRepository.GetUserByChatId(chatId);
+                var targetusers = _webSocketManager.FindTargetedUser(users);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -59,7 +75,7 @@ public class ChatService : IChatService
                     break;
                 }
 
-                SaveMessage(messageObject);
+                //SaveMessage(messageObject);
                 await SendMessageToGroup(targetusers, buffer[..result.Count]);
             }
 
@@ -71,39 +87,31 @@ public class ChatService : IChatService
    
 
 
-    private void AddToSocketToDictionary(string userId, WebSocket socket)
+    /*private void AddToSocketToDictionary(string userId, WebSocket socket)
     {
         Console.WriteLine("-------------------------------------------------");
-        Console.WriteLine($"username: {_userRepository.GetUserById(userId).FirstName}");
-        if (!SocketGroups.ContainsKey(userId))
+        Console.WriteLine($"username: {userId} add to the directory");
+        Console.WriteLine($"socket in group: {SocketGroups.Count} before add socket");
+        if (SocketGroups.ContainsKey(userId))
+        {
+            SocketGroups[userId].Add(socket);
+        }
+        else
         {
             Console.WriteLine($"add: {userId}");
-            SocketGroups.Add(userId, socket);
+            SocketGroups.Add(userId, new List<WebSocket>{socket});
+            
         }
-    }
-    private List<WebSocket> FindeTargetedUser(int chatId)
-    {
-        List<WebSocket> targetUsers = new();
-
-        var users = _userRepository.GetUserByChatId(chatId);
-
-        Console.WriteLine($"socket in group: {SocketGroups.Count}");
-        foreach (var user in users)
-        {
-            if (SocketGroups.ContainsKey(user.Id))
-            {
-                targetUsers.Add(SocketGroups[user.Id]);
-            }
-        }
-        
-        return targetUsers;
-    }
+        Console.WriteLine($"socket in group: {SocketGroups.Count} after add socket");
+    }*/
+    
     
     private async Task SendMessageToGroup(List<WebSocket> targetUsers, byte[] message)
     {
         
         foreach (var user in targetUsers)
         {
+            Console.WriteLine("message counter");
             await user.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }

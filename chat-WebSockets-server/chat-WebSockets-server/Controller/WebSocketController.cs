@@ -17,6 +17,7 @@ public class WebSocketController : ControllerBase
     [Route("/ws")]
     public async Task Get()
     {
+       
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
@@ -28,7 +29,7 @@ public class WebSocketController : ControllerBase
         }
     }
     
-    [Route("/ws/update")]
+    /*[Route("/ws/update")]
     public async Task GetUserData()
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
@@ -40,14 +41,6 @@ public class WebSocketController : ControllerBase
         {
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
         }
-    }
-    private static async Task SaveMessageToDatabase(string message)
-    {
-        // Adatbázis műveletek végrehajtása, pl. üzenet beszúrása az adatbázisba
-        /*using (var dbContext = new YourDbContext())
-        {
-            dbContext.Messages.Add(new Message { Content = message, Timestamp = DateTime.Now });
-            await dbContext.SaveChangesAsync();
-        }*/
-    }
+    }*/
+   
 }

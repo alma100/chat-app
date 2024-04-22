@@ -3,6 +3,7 @@ using chat_WebSockets_server.Repository;
 using chat_WebSockets_server.Repository.UserRepository;
 using chat_WebSockets_server.Service;
 using Microsoft.EntityFrameworkCore;
+using WebSocketManager = chat_WebSockets_server.Service.WebSocketManager;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ void AddServie()
     builder.Services.AddScoped<IChatService, ChatService>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+    builder.Services.AddSingleton<IWebSocketManager, WebSocketManager>();
 }
 
 #endregion

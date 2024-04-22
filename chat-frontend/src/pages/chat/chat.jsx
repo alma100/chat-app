@@ -9,16 +9,19 @@ const Chat = ({profileData}) => {
 
     const [searchFieldValue, setSearchFieldValue] = useState(null);
     const [searchFetchRes, setSearchFetchRes] = useState(null);
+    const [searchFieldError, setSearchFieldError] = useState(null); //searchField erro handling!!
 
-    const [allChatData, setAllChatData] = useState(null);
+    const [activeChat, setActiveChat] = useState([]);
 
-    const [newChatId, setNewChatId] = useState(null);
+    const [allChatData, setAllChatData] = useState([]);
+
+    const [currentChatId, setcurrentChatId] = useState(null);
     const [currentChatUser, setCurrentChatUser] = useState(null);
     const [messageInput, setMessageInput] = useState('');
-    const [messageHistory, setMessageHistory] = useState([]);
-    //let userId = profileData === null ? "0" : profileData.id;
+    const [messageHistory, setMessageHistory] = useState({});
+  
     const WS_URL = "ws://localhost:5102/ws";
-    const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL);
+    const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL);
 
     useEffect(() => {
         if (lastMessage !== null) {
@@ -26,13 +29,12 @@ const Chat = ({profileData}) => {
             const messageObject = JSON.parse(lastMessage.data);
             console.log(messageObject);
             if(messageObject.message !== "connection opend"){
-                setMessageHistory(prevMessages => [...prevMessages, messageObject]);
+                handleIncomingMessage(messageObject);
             }
             
             console.log("connection")
         }
 
-        console.log("aísad")
     }, [lastMessage]);
 
     useEffect(()=> {
@@ -41,19 +43,37 @@ const Chat = ({profileData}) => {
             Content : "connection request",
             ChatId: 0
         }
-        sendMessage(JSON.stringify(message))
+        sendJsonMessage(message)
 
         getAllChatFetch().then(res => {
-            console.log(res)
             setAllChatData(res);
         })
 
     },[])
 
     useEffect(()=> {
+        console.log(messageHistory)
+    },[messageHistory])
 
-    },[newChatId])
-
+    const handleIncomingMessage = (messageObj) => {
+        
+        if(messageObj.ChatId in messageHistory){
+            console.log("incomingIf")
+            setMessageHistory({
+                ...messageHistory,
+                [messageObj.ChatId]: [...messageHistory[messageObj.ChatId], messageObj]
+            });
+        }else{
+            console.log("incomingElse")
+            setMessageHistory({
+                ...messageHistory,
+                [messageObj.ChatId]: [messageObj]
+            });
+            getAllChatFetch().then(res => {
+                setAllChatData(res);
+            })
+        }
+    }   
 
     const searchFetch = (name) => {
         return fetch("/api/Chat/getUserByName", {
@@ -85,12 +105,12 @@ const Chat = ({profileData}) => {
 
     const sendButtonHandler = () => {
         
-        if (messageInput !== "" && newChatId !== null) {
+        if (messageInput !== "" && currentChatId !== null) {
             console.log("qwer")
             let message = {
                 UserId: profileData.id,
                 Content : messageInput,
-                ChatId: newChatId
+                ChatId: currentChatId
             };
             sendMessage(JSON.stringify(message));
         }
@@ -104,31 +124,50 @@ const Chat = ({profileData}) => {
         let nameObj = {
             name: searchFieldValue
         }
-        searchFetch(nameObj).then(res=> {
-            setSearchFetchRes(res);
-        })
+        if(searchFieldValue.length > 0){
+            searchFetch(nameObj).then(res=> {
+                setSearchFetchRes(res);
+            })
+        }else{
+            //error kezelés
+        }
+        
     }
 
-    const handleDivClick = (name) => {
-        console.log("Clicked on div with valuse:", name ); //name.id --> név identity id-a
-
+    const handleSearchButtonClick = (name) => {
+       
         let chatObj = {
             UsersId: [name.id, profileData.id]
         }
 
         createChatFetch(chatObj).then(
             res=> {
-                console.log(res); //ez qurvára undefined!!!
-                setNewChatId(res.id);
+                console.log(res)
+                setcurrentChatId(res.id);
                 setCurrentChatUser(res.usersFullName[0]);
+                setMessageHistory({
+                    ...messageHistory,
+                    [res.id]: []
+                });
+                setAllChatData([...allChatData, res]);
             }
         )
     };
 
     const chatHandler = (chatDto) =>{
-        console.log(chatDto);
-        setNewChatId(chatDto.id);
+        console.log(chatDto.id);
+        setcurrentChatId(chatDto.id);
+
+        if(!(chatDto.id in messageHistory)){
+           
+            setMessageHistory({
+                ...messageHistory,
+                [chatDto.id]: []
+            }); //ha mégnem kapott üzenetet DONE ,  + létrehozni és lekérni a régi üzeneteket.!!!
+        }
         setCurrentChatUser(chatDto.usersFullName[0]);
+
+        
     }
     
     return (
@@ -150,28 +189,37 @@ const Chat = ({profileData}) => {
                             {
                                 searchFetchRes && 
                                 Object.values(searchFetchRes).map((name, index) => {
-                                    return <div key={index}  onClick={() => handleDivClick(name)}>{name.firstName+" "+name.lastName}</div>
+                                    return <div key={index}  onClick={() => handleSearchButtonClick(name)}>{name.firstName+" "+name.lastName}</div>
                                 })
                             }
                         </div>
                     </Grid>
-                    <Grid item xs={4}>
-                        <div>
+                    <Grid item xs={5}>
+                        {/*
+                            <div>
                            {currentChatUser === null ? "No chat selected" : currentChatUser}
                         </div>
                         <div id="chatField">
-                            {messageHistory.map((message, index) => {
-                                if (message.UserId === profileData.id) {
-                                    return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.Content}</div>
-                                        <span className="chatOwnProfile"><img className="ownChatuserIcon" src={User} alt="Show password Icon" /></span></div>
-                                } else {
-                                    return <div className="chatMessageWrapper"><span className="chatOwnProfile">
-                                        <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
-                                        <div key={index} className="chatRecivedMessage">{message.Content}</div>
-                                    </div>
-                                }
+                            { currentChatId !== null ? (
+                                messageHistory[currentChatId].map((message, index) => {
+                                    if (message.UserId === profileData.id) {
+                                        return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.Content}</div>
+                                            <span className="chatOwnProfile"><img className="ownChatuserIcon" src={User} alt="Show password Icon" /></span></div>
+                                    } else {
+                                        return <div className="chatMessageWrapper"><span className="chatOwnProfile">
+                                            <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
+                                            <div key={index} className="chatRecivedMessage">{message.Content}</div>
+                                        </div>
+                                    }
+    
+                                })
+                               
+                            ) : (
+                                <div>
 
-                            })}
+                                </div>
+                            )
+                            }
                         </div>
                         <div id="chatInputContainer">
                             <input
@@ -181,19 +229,23 @@ const Chat = ({profileData}) => {
                             >
                             </input>
                             <div onClick={(e) => sendButtonHandler(e)}>Submit</div>
-                        </div>
+                        </div>*/
+                        }   
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                         <div id="allChatContainer">
                             {
                                 allChatData && allChatData.map((value, index)=>{
-                                    //console.log(value.usersFullName[0])
-                                    return <div onClick={()=> {chatHandler(value)}}>{value.usersFullName[0]}</div>
+                                    return <div className="allChatContentDiv"
+                                    onClick={()=> {chatHandler(value)}}>{value.usersFullName[0]}</div>
                                 })
                             }
                         </div>
                     </Grid>
                 </Grid>
+                <div id="chatboxRoot">
+
+                </div>
             </Box>
 
         </>
