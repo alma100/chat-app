@@ -1,8 +1,7 @@
 .navbarBox{
-    width: 100%;
+    
     display: flex;
-    top: 20px;
-    height: 10%;
+    position: relative;
     background-color: rgba(179, 179, 197, 0.801);
 
     z-index: 100;
