@@ -7,4 +7,6 @@ public interface IWebSocketManager
 {
     bool AddSocketToGroup(WebSocket socket, string userId);
     List<WebSocket> FindTargetedUser(List<User> users);
+
+    void RemoveSocket(WebSocket socket);
 }

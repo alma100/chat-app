@@ -20,14 +20,26 @@ const Chat = ({ profileData }) => {
     const [allChatData, setAllChatData] = useState([]);
 
     const [currentChatId, setcurrentChatId] = useState(null);
-    //const [currentChatUser, setCurrentChatUser] = useState(null);
     const [messageInput, setMessageInput] = useState({});
     const [messageHistory, setMessageHistory] = useState({});
+
+    const [showCloseIcon, setShowCloseIcon] = useState(null);
 
     const bottomRef = useRef();
 
     const WS_URL = "ws://localhost:5102/ws";
-    const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL);
+    const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
+        onOpen: () => console.log('opened'),
+        //Will attempt to reconnect on all close events, such as server shutting down
+        shouldReconnect: (closeEvent) => true,
+        withCredentials: true,
+        /*heartbeat: {
+            message: 'ping',
+            returnMessage: 'pong',
+            timeout: 60000, // 1 minute, if no response is received, the connection will be closed
+            interval: 25000, // every 25 seconds, a ping message will be sent
+          },*/
+      });
 
     useEffect(() => {
         if (lastMessage !== null) {
@@ -43,12 +55,29 @@ const Chat = ({ profileData }) => {
                 }
             }
 
-            console.log("connection")
+            console.log("connection");
         }
         console.log(bottomRef)
     }, [lastMessage]);
 
     useEffect(() => {
+        console.log("Connection state changed")
+        let message = {
+            UserId: profileData.id,
+            Content: "connection request",
+            ChatId: 0
+        }
+        if (readyState === ReadyState.OPEN) {
+          sendJsonMessage(message)
+          getAllChatFetch().then(res => {
+            console.log(res)
+            setAllChatData(res);
+        })
+        }
+        console.log(readyState)
+      }, [readyState])
+
+    /*useEffect(() => {
         let message = {
             UserId: profileData.id,
             Content: "connection request",
@@ -61,7 +90,7 @@ const Chat = ({ profileData }) => {
             setAllChatData(res);
         })
 
-    }, [])
+    }, [])*/
 
     useEffect(() => {
         if (activeChat.length !== 0) {
@@ -147,7 +176,6 @@ const Chat = ({ profileData }) => {
             res => {
                 console.log(res)
                 setcurrentChatId(res.id);
-                //setCurrentChatUser(res.usersFullName[0]);
                 setMessageHistory({
                     ...messageHistory,
                     [res.id]: []
@@ -157,9 +185,9 @@ const Chat = ({ profileData }) => {
         )
     };
 
-    useEffect(()=> {
+    useEffect(() => {
         console.log(activeChat);
-    },[activeChat])
+    }, [activeChat])
 
     const chatHandler = (chatDto) => {
         console.log(chatDto.id);
@@ -170,19 +198,8 @@ const Chat = ({ profileData }) => {
                 [chatDto.id]: []
             }); //ha mégnem kapott üzenetet DONE ,  + létrehozni és lekérni a régi üzeneteket.!!!
         }
-        //setCurrentChatUser(chatDto.usersFullName[0]);  //valószínű már nem kell
 
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
-            /*if(activeChat.length < 3){
-                setActiveChat([...activeChat, chatDto.id]);
-            }else{
-                let currentActiveChat = [...activeChat];
-                let firstChatId = currentActiveChat[0];
-                setPendingChat([...pendingChat, firstChatId]);
-                let newOnlineChat = currentActiveChat.slice(1);
-                newOnlineChat.push(chatDto.id);
-                setActiveChat(newOnlineChat);
-            }*/
             messageBackToOnline(chatDto.id);
         }
     }
@@ -226,16 +243,32 @@ const Chat = ({ profileData }) => {
         let currentActiveChat = [...activeChat];
         let upgradedPedingChat = pendingChat.filter(id => id !== chatId);
 
-        if(currentActiveChat.length >= 3){
+        if (currentActiveChat.length >= 3) {
             let firstChatId = currentActiveChat[0];
             let newOnlineChat = currentActiveChat.slice(1);
             newOnlineChat.push(chatId);
             setActiveChat(newOnlineChat);
             upgradedPedingChat.push(firstChatId)
-        }else{
+        } else {
             setActiveChat([...currentActiveChat, chatId])
         }
         setPendingChat(upgradedPedingChat);
+        setShowCloseIcon(null);
+    }
+
+    const closeMessageInTab = (chatId, e) => {
+        e.stopPropagation();  //prevent to trigger the parrent div onClick action.
+        let upgradedPedingChat = pendingChat.filter(id => id !== chatId);
+        setPendingChat(upgradedPedingChat);
+        setShowCloseIcon(null);
+    }
+
+    // --------------- Warning methods ----------------------
+
+    const chatMessageWarningHandler = (chatId, index) => {
+        console.log(messageHistory[chatId]);
+        setShowCloseIcon(index);
+        
     }
 
     return (
@@ -243,7 +276,7 @@ const Chat = ({ profileData }) => {
             <Navbar />
             <Box className="chatBox">
                 <Grid container width="100%">
-                    <Grid item xs={4} >
+                    <Grid item xs={2} >
                         <div className="chatGrid">
                             <div id="searchBarContainer">
                                 <input type="text"
@@ -258,14 +291,15 @@ const Chat = ({ profileData }) => {
                                 {
                                     searchFetchRes &&
                                     Object.values(searchFetchRes).map((name, index) => {
-                                        return <div key={index} onClick={() => handleSearchButtonClick(name)}>{name.firstName + " " + name.lastName}</div>
+                                        return <div key={index} onClick={() => handleSearchButtonClick(name)}
+                                        className="chat-search-result-element">{name.firstName + " " + name.lastName}</div>
                                     })
                                 }
                             </div>
                         </div>
 
                     </Grid>
-                    <Grid item xs={5}>
+                    <Grid item xs={7}>
 
                     </Grid>
                     <Grid item xs={3} >
@@ -288,18 +322,60 @@ const Chat = ({ profileData }) => {
 
                     {
                         pendingChat.map((chatId, index) => {
-                            return <div className="pending-chat-container" style={{ bottom: `calc(2vw + ${index * 6}vw)` }}
-                            onClick={()=>messageBackToOnline(chatId)}
-                            key={index}>
-                                {chatId}
-                            </div>
+                            return <>
+                                <div className="pending-chat-container" style={{ bottom: `calc(10px + ${index * 90}px)` }}
+                                    onClick={() => messageBackToOnline(chatId)}
+                                    key={index}
+                                    onMouseEnter={() => chatMessageWarningHandler(chatId, index)}
+                                    onMouseLeave={() => setShowCloseIcon(null)}>
+
+                                    <div id={`closeTabChat${index}`}
+                                        style={{
+                                            position: 'relative',
+                                            bottom: '5px',
+                                            left: '40px',
+                                            displey: 'flex',
+                                            justifyContent: 'center',
+                                            visibility: showCloseIcon === index ? 'visible' : 'hidden',
+                                            width: '20px',
+                                            height: '20px',
+                                            backgroundColor: 'rgb(224, 222, 222)',
+                                            alignItems: 'center',
+                                            borderRadius: '50px',
+                                        }}
+                                        onClick={(e) => { closeMessageInTab(chatId, e) }}>
+                                        <img style={{
+                                            width: '13px',
+                                            height: '13px',
+                                        }} src={Close} alt="Close chat tab Icon" />
+                                    </div>
+                                    {chatId}
+                                </div>
+                                <div id={`messageTabChat${index}`}
+                                    style={{
+                                         position: 'absolute',
+                                         bottom: `calc(15px + ${index * 90}px)`,
+                                         right: '110px',
+                                         displey: 'flex',
+                                         visibility: showCloseIcon === index ? 'visible' : 'hidden',
+                                         width: '200px',
+                                         height: '50px',
+                                         backgroundColor: 'rgb(224, 222, 222)',
+                                         alignItems: 'center',
+                                         borderRadius: '10px',
+                                         padding: '5px'
+                                    }}>
+                                    Last message content... 
+                                </div>
+                            </>
+
                         })
                     }
 
                     {
                         activeChat.map((value, index) => {
                             if (index < 3) {
-                                return <div className="chat-box" /*style={{ left: 80 - index * 3 +'vw' }}*/ style={{ left: `calc(60vw - ${index * 20}vw)` }} key={index}>
+                                return <div className="chat-box" style={{ left: `calc(60vw - ${index * 20}vw)` }} key={index}>
                                     <div className="chat-box-header">
                                         <div className="chat-box-header-elements">
                                             {
@@ -323,7 +399,7 @@ const Chat = ({ profileData }) => {
                                     </div>
                                     <div className="chat-box-body">
                                         <div className="chat-box-overlay">
-                                            {currentChatId !== null ? (
+                                            {
                                                 messageHistory[value].map((message, index) => {
                                                     if (message.UserId === profileData.id) {
                                                         return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.Content}</div>
@@ -337,11 +413,7 @@ const Chat = ({ profileData }) => {
 
                                                 })
 
-                                            ) : (
-                                                <div>
 
-                                                </div>
-                                            )
                                             }
                                             <div id="bottom-reference" ref={bottomRef} />
                                         </div>
@@ -353,7 +425,7 @@ const Chat = ({ profileData }) => {
                                                 type="text"
                                                 onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
                                                 className="registrationInput"
-                                                value={messageInput[value]}
+                                                value={messageInput[value] === undefined ? "" : messageInput[value]}
                                             >
                                             </input>
                                             <div onClick={() => sendButtonHandler(value)}
