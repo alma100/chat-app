@@ -13,7 +13,7 @@ public class UserRepository : IUserRepository
         _chatContext = chatContext;
     }
 
-    public List<User> GetUserByChatId(int chatId)
+    public List<User> GetUserByChatId(int? chatId)
     {
         var usersInChat = _chatContext.Users.Where(u => u.Chats.Any(c => c.Id == chatId)).ToList();
         

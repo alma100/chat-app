@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom"
 import Navbar from "../Navbar/navbar";
 import { Box, Grid } from "@mui/material";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
@@ -8,7 +9,9 @@ import Close from "../../icons/close.png"
 import Submit from "../../icons/submit.png"
 import Minus from "../../icons/minus.png"
 
-const Chat = ({ profileData }) => {
+const Chat = ({ profileData, setProfileData }) => {
+
+    const navigate = useNavigate();
 
     const [searchFieldValue, setSearchFieldValue] = useState(null);
     const [searchFetchRes, setSearchFetchRes] = useState(null);
@@ -28,24 +31,51 @@ const Chat = ({ profileData }) => {
     const bottomRef = useRef();
 
     const WS_URL = "ws://localhost:5102/ws";
+
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
+        share: true,
         //Will attempt to reconnect on all close events, such as server shutting down
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
-        /*heartbeat: {
-            message: 'ping',
-            returnMessage: 'pong',
-            timeout: 60000, // 1 minute, if no response is received, the connection will be closed
-            interval: 25000, // every 25 seconds, a ping message will be sent
-          },*/
-      });
+    });
+
+    useEffect(() => {
+        var szelesseg = window.innerWidth;
+        var magassag = window.innerHeight;
+
+        console.log("Böngésző ablak szélessége: " + szelesseg);
+        console.log("Böngésző ablak magassága: " + magassag);
+
+        if (profileData !== null) {
+            let message = {
+                Event: "connection request",
+                UserId: profileData.id,
+                Content: null,
+                ChatId: null
+            };
+            if (readyState === ReadyState.OPEN) {
+                sendJsonMessage(message);
+                getAllChatFetch().then(res => {
+                    console.log(res);
+                    setAllChatData(res);
+                });
+            }
+        } else {
+            refreshProfilData().then(res => {
+                console.log(res)
+                if (res !== undefined) {
+                    console.log(res)
+                    setProfileData(res);
+                }
+            });
+        }
+    }, [profileData, readyState])
+
 
     useEffect(() => {
         if (lastMessage !== null) {
-            console.log(lastMessage.data)
             const messageObject = JSON.parse(lastMessage.data);
-            console.log(messageObject);
             if (messageObject.message !== "connection opend") {
                 handleIncomingMessage(messageObject);
                 if (activeChat.length !== 0) {
@@ -57,40 +87,8 @@ const Chat = ({ profileData }) => {
 
             console.log("connection");
         }
-        console.log(bottomRef)
     }, [lastMessage]);
 
-    useEffect(() => {
-        console.log("Connection state changed")
-        let message = {
-            UserId: profileData.id,
-            Content: "connection request",
-            ChatId: 0
-        }
-        if (readyState === ReadyState.OPEN) {
-          sendJsonMessage(message)
-          getAllChatFetch().then(res => {
-            console.log(res)
-            setAllChatData(res);
-        })
-        }
-        console.log(readyState)
-      }, [readyState])
-
-    /*useEffect(() => {
-        let message = {
-            UserId: profileData.id,
-            Content: "connection request",
-            ChatId: 0
-        }
-        sendJsonMessage(message)
-
-        getAllChatFetch().then(res => {
-            console.log(res)
-            setAllChatData(res);
-        })
-
-    }, [])*/
 
     useEffect(() => {
         if (activeChat.length !== 0) {
@@ -118,6 +116,16 @@ const Chat = ({ profileData }) => {
                 setAllChatData(res);
             })
         }
+    }
+
+    const refreshProfilData = () => {
+        return fetch('/api/Auth/HowAmI').then(res => {
+            if (res.status === 200) {
+                return res.json();
+            } else if (res.status === 401) {
+                navigate("/login");
+            }
+        });
     }
 
     const searchFetch = (name) => {
@@ -185,9 +193,6 @@ const Chat = ({ profileData }) => {
         )
     };
 
-    useEffect(() => {
-        console.log(activeChat);
-    }, [activeChat])
 
     const chatHandler = (chatDto) => {
         console.log(chatDto.id);
@@ -213,6 +218,7 @@ const Chat = ({ profileData }) => {
 
         if (messageInput[chatId] !== "") {
             let message = {
+                Event: "message",
                 UserId: profileData.id,
                 Content: messageInput[chatId],
                 ChatId: chatId
@@ -268,182 +274,202 @@ const Chat = ({ profileData }) => {
     const chatMessageWarningHandler = (chatId, index) => {
         console.log(messageHistory[chatId]);
         setShowCloseIcon(index);
-        
+
     }
 
     return (
         <>
-            <Navbar />
-            <Box className="chatBox">
-                <Grid container width="100%">
-                    <Grid item xs={2} >
-                        <div className="chatGrid">
-                            <div id="searchBarContainer">
-                                <input type="text"
-                                    onChange={(e) => { setSearchFieldValue(e.target.value) }}>
-                                </input>
-                                <div id="chatSearchButton"
-                                    onClick={() => { chatSearchHandler() }}>
-                                    Search
-                                </div>
-                            </div>
-                            <div id="searchResultContainer">
-                                {
-                                    searchFetchRes &&
-                                    Object.values(searchFetchRes).map((name, index) => {
-                                        return <div key={index} onClick={() => handleSearchButtonClick(name)}
-                                        className="chat-search-result-element">{name.firstName + " " + name.lastName}</div>
-                                    })
-                                }
-                            </div>
-                        </div>
-
-                    </Grid>
-                    <Grid item xs={7}>
-
-                    </Grid>
-                    <Grid item xs={3} >
-                        <div className="chatGrid">
-
-                            <div id="allChatContainer">
-                                <div>Chats</div>
-                                {
-                                    allChatData && allChatData.map((value, index) => {
-                                        return <div className="allChatContentDiv"
-                                            onClick={() => { chatHandler(value) }}>{value.usersFullName[0]}</div>
-                                    })
-                                }
-                            </div>
-                        </div>
-
-                    </Grid>
-                </Grid>
-                <div id="chatboxRoot">
-
-                    {
-                        pendingChat.map((chatId, index) => {
-                            return <>
-                                <div className="pending-chat-container" style={{ bottom: `calc(10px + ${index * 90}px)` }}
-                                    onClick={() => messageBackToOnline(chatId)}
-                                    key={index}
-                                    onMouseEnter={() => chatMessageWarningHandler(chatId, index)}
-                                    onMouseLeave={() => setShowCloseIcon(null)}>
-
-                                    <div id={`closeTabChat${index}`}
-                                        style={{
-                                            position: 'relative',
-                                            bottom: '5px',
-                                            left: '40px',
-                                            displey: 'flex',
-                                            justifyContent: 'center',
-                                            visibility: showCloseIcon === index ? 'visible' : 'hidden',
-                                            width: '20px',
-                                            height: '20px',
-                                            backgroundColor: 'rgb(224, 222, 222)',
-                                            alignItems: 'center',
-                                            borderRadius: '50px',
-                                        }}
-                                        onClick={(e) => { closeMessageInTab(chatId, e) }}>
-                                        <img style={{
-                                            width: '13px',
-                                            height: '13px',
-                                        }} src={Close} alt="Close chat tab Icon" />
-                                    </div>
-                                    {chatId}
-                                </div>
-                                <div id={`messageTabChat${index}`}
-                                    style={{
-                                         position: 'absolute',
-                                         bottom: `calc(15px + ${index * 90}px)`,
-                                         right: '110px',
-                                         displey: 'flex',
-                                         visibility: showCloseIcon === index ? 'visible' : 'hidden',
-                                         width: '200px',
-                                         height: '50px',
-                                         backgroundColor: 'rgb(224, 222, 222)',
-                                         alignItems: 'center',
-                                         borderRadius: '10px',
-                                         padding: '5px'
-                                    }}>
-                                    Last message content... 
-                                </div>
-                            </>
-
-                        })
-                    }
-
-                    {
-                        activeChat.map((value, index) => {
-                            if (index < 3) {
-                                return <div className="chat-box" style={{ left: `calc(60vw - ${index * 20}vw)` }} key={index}>
-                                    <div className="chat-box-header">
-                                        <div className="chat-box-header-elements">
-                                            {
-                                                allChatData.map(obj => {
-                                                    if (obj.id == value) {
-                                                        return obj.usersFullName[0];
-                                                    }
-                                                })
-                                            }
-                                        </div>
-                                        <div className="chat-box-toggle">
-                                            <span onClick={() => { sendMessageToTab(value) }}
-                                                className="chat-box-toggle-element">
-                                                <img className="onlineChatMinusIcon" src={Minus} alt="Close chat tab Icon" />
-                                            </span>
-                                            <span onClick={() => { closeChatBox(value) }}
-                                                className="chat-box-toggle-element">
-                                                <img className="onlineChatCloseIcon" src={Close} alt="Close chat tab Icon" />
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="chat-box-body">
-                                        <div className="chat-box-overlay">
-                                            {
-                                                messageHistory[value].map((message, index) => {
-                                                    if (message.UserId === profileData.id) {
-                                                        return <div className="chatOwnMessageWrapper"><div key={index} className="chatOwnMessage">{message.Content}</div>
-                                                            <span className="chatOwnProfile"><img className="ownChatuserIcon" src={User} alt="Show password Icon" /></span></div>
-                                                    } else {
-                                                        return <div className="chatMessageWrapper"><span className="chatOwnProfile">
-                                                            <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
-                                                            <div key={index} className="chatRecivedMessage">{message.Content}</div>
-                                                        </div>
-                                                    }
-
-                                                })
-
-
-                                            }
-                                            <div id="bottom-reference" ref={bottomRef} />
-                                        </div>
-
-                                    </div>
-                                    <div className="chat-input">
-                                        <div className="onlie-Chat-Input-Container">
-                                            <input
-                                                type="text"
-                                                onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
-                                                className="registrationInput"
-                                                value={messageInput[value] === undefined ? "" : messageInput[value]}
-                                            >
+            {
+                profileData !== null ? (
+                    <div>
+                        <Navbar />
+                        <Box className="chatBox">
+                            <Grid container width="100%">
+                                <Grid item xs={5} ms={5} md={3} >
+                                    <div className="chatGrid">
+                                        <div id="searchBarContainer">
+                                            <input type="text"
+                                                onChange={(e) => { setSearchFieldValue(e.target.value) }}>
                                             </input>
-                                            <div onClick={() => sendButtonHandler(value)}
-                                                className="online-chat-send-Button-div">
-                                                <img className="online-chat-icon" src={Submit} alt="Show password Icon" />
+                                            <div id="chatSearchButton"
+                                                onClick={() => { chatSearchHandler() }}>
+                                                Search
                                             </div>
                                         </div>
-
-
+                                        <div id="searchResultContainer">
+                                            {
+                                                searchFetchRes &&
+                                                Object.values(searchFetchRes).map((name, index) => {
+                                                    return <div key={index} onClick={() => handleSearchButtonClick(name)}
+                                                        className="chat-search-result-element">{name.firstName + " " + name.lastName}</div>
+                                                })
+                                            }
+                                        </div>
                                     </div>
 
-                                </div>
+                                </Grid>
+                                <Grid item xs={0} ms={0} md={7}>
+
+                                </Grid>
+                                <Grid item xs={5} ms={5} md={2}>
+                                    <div className="chatGrid">
+
+                                        <div id="allChatContainer">
+                                            <div>Chats</div>
+                                            {
+                                                allChatData && allChatData.map((value, index) => {
+                                                    return <div className="allChatContentDiv"
+                                                        onClick={() => { chatHandler(value) }}>{value.usersFullName[0]}</div>
+                                                })
+                                            }
+                                        </div>
+                                    </div>
+
+                                </Grid>
+                            </Grid>
+                        </Box>
+                        <div id="chatboxRoot">
+
+                            {
+                                pendingChat.map((chatId, index) => {
+                                    return <>
+                                        <div className="pending-chat-container" style={{ bottom: `calc(10px + ${index * 90}px)` }}
+                                            onClick={() => messageBackToOnline(chatId)}
+                                            key={index}
+                                            onMouseEnter={() => chatMessageWarningHandler(chatId, index)}
+                                            onMouseLeave={() => setShowCloseIcon(null)}>
+
+                                            <div id={`closeTabChat${index}`}
+                                                style={{
+                                                    position: 'relative',
+                                                    bottom: '5px',
+                                                    left: '40px',
+                                                    displey: 'flex',
+                                                    justifyContent: 'center',
+                                                    visibility: showCloseIcon === index ? 'visible' : 'hidden',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                    backgroundColor: 'rgb(224, 222, 222)',
+                                                    alignItems: 'center',
+                                                    borderRadius: '50px',
+                                                }}
+                                                onClick={(e) => { closeMessageInTab(chatId, e) }}>
+                                                <img style={{
+                                                    width: '13px',
+                                                    height: '13px',
+                                                }} src={Close} alt="Close chat tab Icon" />
+                                            </div>
+                                            {chatId}
+                                        </div>
+                                        <div id={`messageTabChat${index}`}
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: `calc(15px + ${index * 90}px)`,
+                                                right: '110px',
+                                                displey: 'flex',
+                                                visibility: showCloseIcon === index ? 'visible' : 'hidden',
+                                                width: '200px',
+                                                height: '50px',
+                                                backgroundColor: 'rgb(224, 222, 222)',
+                                                alignItems: 'center',
+                                                borderRadius: '10px',
+                                                padding: '5px'
+                                            }}>
+                                            Last message content...
+                                        </div>
+                                    </>
+
+                                })
                             }
 
-                        })
-                    }
-                </div>
-            </Box>
+                            {
+                                activeChat.map((value, index) => {
+                                    if (index < 3) {
+                                        return <div className="chat-box" style={{ left: `calc(60vw - ${index * 350}px)` }} key={index}>
+                                            <div className="chat-box-header">
+                                                <div className="chat-box-header-elements">
+                                                    {
+                                                        allChatData.map(obj => {
+                                                            if (obj.id == value) {
+                                                                return obj.usersFullName[0];
+                                                            }
+                                                        })
+                                                    }
+                                                </div>
+                                                <div className="chat-box-toggle">
+                                                    <span onClick={() => { sendMessageToTab(value) }}
+                                                        className="chat-box-toggle-element">
+                                                        <img className="onlineChatMinusIcon" src={Minus} alt="Close chat tab Icon" />
+                                                    </span>
+                                                    <span onClick={() => { closeChatBox(value) }}
+                                                        className="chat-box-toggle-element">
+                                                        <img className="onlineChatCloseIcon" src={Close} alt="Close chat tab Icon" />
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="chat-box-body">
+                                                <div className="chat-box-overlay">
+                                                    {
+                                                        messageHistory[value].map((message, index) => {
+                                                            if (message.UserId === profileData.id) {
+                                                                return <div className="chatOwnMessageWrapper">
+                                                                    <div className="owenMessageContainer">
+                                                                        <div key={index} className="chatOwnMessage">{message.Content} </div>
+                                                                    </div>
+                                                                    
+                                                                    <div className="owenChatEmoji">emoji</div>
+                                                                    
+                                                                    
+                                                                    
+                                                                </div>
+                                                            } else {
+                                                                return <div className="chatMessageWrapper"><span className="chatOwnProfile">
+                                                                    <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
+                                                                    <div key={index} className="chatRecivedMessage">{message.Content}</div>
+                                                                </div>
+                                                            }
+
+                                                        })
+
+
+                                                    }
+                                                    <div id="bottom-reference" ref={bottomRef} />
+                                                </div>
+
+                                            </div>
+                                            <div className="chat-input">
+                                                <div className="onlie-Chat-Input-Container">
+                                                    <input
+                                                        type="text"
+                                                        onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
+                                                        className="registrationInput"
+                                                        value={messageInput[value] === undefined ? "" : messageInput[value]}
+                                                    >
+                                                    </input>
+                                                    <div onClick={() => sendButtonHandler(value)}
+                                                        className="online-chat-send-Button-div">
+                                                        <img className="online-chat-icon" src={Submit} alt="Show password Icon" />
+                                                    </div>
+                                                </div>
+
+
+                                            </div>
+
+                                        </div>
+                                    }
+
+                                })
+                            }
+                        </div>
+
+                    </div>
+                ) : (
+                    <div>
+                        Waiting for data...
+                    </div>
+                )
+            }
+
 
         </>
     )

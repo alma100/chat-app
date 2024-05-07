@@ -18,4 +18,6 @@ public class MessageRepository : IMessageRepository
         await _chatContext.Message.AddAsync(message);
         await _chatContext.SaveChangesAsync();
     }
+    
+    
 }

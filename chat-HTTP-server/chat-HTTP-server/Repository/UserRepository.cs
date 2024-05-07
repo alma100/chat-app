@@ -63,6 +63,14 @@ public class UserRepository : IUserRepository
         return res;
     }
     
+    public async Task<User> GetUserById(string id)
+    {
+
+        var res = await _chatContext.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+        return res;
+    }
+    
     public List<ChatDto> GetAllChatByUserId(string id)
     {
         

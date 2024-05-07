@@ -11,6 +11,8 @@ public interface IUserRepository
     List<User> GetUserByName(string name, string id);
 
     List<User> GetUserById(List<string> id);
+
+    Task<User> GetUserById(string id);
     
     List<ChatDto> GetAllChatByUserId(string id);
 }

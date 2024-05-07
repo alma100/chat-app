@@ -1,5 +1,6 @@
 ﻿
 using System.Security.Claims;
+using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
 using chat_HTTP_server.Service.AuthModel;
 using Microsoft.AspNetCore.Authentication;
@@ -118,6 +119,36 @@ public class AuthController : ControllerBase
             Console.WriteLine(e);
             return BadRequest();
         }
+    }
+    
+    [HttpGet("HowAmI")]
+    public async Task<ActionResult> HowAmI()
+    {
+        try
+        {
+            //var token = HttpContext.Request.Cookies["access_token"];
+            var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var res = await _userRepository.GetUserById(userId);
+
+            if (res == null)
+            {
+                return Unauthorized();
+            }
+        
+            return Ok(new AuthResponse(res.Email, res.UserName, res.Id));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
     }
     
     private void AddErrors(AuthResult result)

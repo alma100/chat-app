@@ -7,32 +7,25 @@ namespace chat_WebSockets_server.Service;
 
 public class WebSocketManager : IWebSocketManager
 {
-    private Dictionary<string, List<WebSocket>> SocketGroups { get; } = new ();
+    private Dictionary<string, List<WebSocket>> SocketGroups { get; set; } = new ();
 
-    public bool AddSocketToGroup(WebSocket socket, string userID)
+    public async Task<bool> AddSocketToGroup(WebSocket socket, string userID)
     {
-        /*if (!SocketGroups.ContainsKey(userID))
+        if (!SocketGroups.ContainsKey(userID))
         {
             SocketGroups[userID] = new List<WebSocket>();
         }
-        SocketGroups[userID].Add(socket);*/
 
-        var isContains = false;
-        foreach (var id in SocketGroups.Keys)
-        {
-            Console.WriteLine($"directUSERID {id} : {userID}");
-            if (id == userID)
-            {
-                isContains = true;
-            }
-            
-        }
+        var socketsForUser = SocketGroups[userID];
 
-        if (!isContains)
+        var existingSocket = socketsForUser.FirstOrDefault(s => s == socket);
+        if (existingSocket != null)
         {
-            SocketGroups[userID] = new List<WebSocket>();
+            await existingSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,"close", default);
         }
         SocketGroups[userID].Add(socket);
+        
+        
 
         foreach (var VARIABLE in SocketGroups)
         {
@@ -58,7 +51,13 @@ public class WebSocketManager : IWebSocketManager
             
             if (SocketGroups.ContainsKey(user.Id))
             {
-                targetUsers.AddRange(SocketGroups[user.Id]);
+                foreach (var socket in SocketGroups[user.Id])
+                {
+                    if (socket.State == WebSocketState.Open)
+                    {
+                        targetUsers.Add(socket);
+                    }
+                }
             }
         }
         
@@ -67,6 +66,8 @@ public class WebSocketManager : IWebSocketManager
 
     public void RemoveSocket(WebSocket socket)
     {
+        Console.WriteLine("remove method start");
+        Console.WriteLine($"socket in group: {SocketGroups.Count} socket");
         foreach (var group in SocketGroups.Values)
         {
             if (group.Contains(socket))
@@ -76,9 +77,12 @@ public class WebSocketManager : IWebSocketManager
                 {
                     var key = SocketGroups.FirstOrDefault(x => x.Value == group).Key;
                     SocketGroups.Remove(key);
+                    Console.WriteLine($"{socket} removed");
+                    Console.WriteLine($"socket in group: {SocketGroups.Count} after remove socket");
                 }
                 break;
             }
         }
+        
     }
 }

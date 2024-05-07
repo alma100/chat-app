@@ -33,78 +33,40 @@ public class ChatService : IChatService
             var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), default);
             var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
             Console.WriteLine($"üzenet: {message}");
-            var messageObject = new Message();
-            if (message == null)
+            var messageObject = new WebSocketObj();
+            if(message != "")
             {
-                Console.WriteLine("null üzenet");
-            }
-            if (message == "")
-            {
-                Console.WriteLine(socket);
-                Console.WriteLine("üres üzenet");
-            }
-            else
-            {
-                messageObject = JsonSerializer.Deserialize<Message>(message);
+                messageObject = JsonSerializer.Deserialize<WebSocketObj>(message);
             }
             
-            //messageObject = JsonSerializer.Deserialize<Message>(message);
             
-            
-            if (messageObject.Content == "connection request")
+            if (messageObject.Event == "connection request")
             { 
                 Console.WriteLine("asd"); 
-                _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
+                await _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
                 var initRes = new { message = "connection opend" };
                 string jsonInitRes = JsonSerializer.Serialize(initRes);
                 byte[] initResBuffer = Encoding.UTF8.GetBytes(jsonInitRes);
                 await socket.SendAsync(initResBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
             }
-            else
+            else if(messageObject.Event == "message")
             {
-                var chatId = messageObject.ChatId;
-                //_webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
-                var users = _userRepository.GetUserByChatId(chatId);
-                var targetusers = _webSocketManager.FindTargetedUser(users);
-
-                if (result.MessageType == WebSocketMessageType.Close)
-                {
-
-                    await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, default);
-                    break;
-                }
-
-                //SaveMessage(messageObject);
-                await SendMessageToGroup(targetusers, buffer[..result.Count]);
+                await handleMessage(messageObject, result, buffer);
+            }
+            else if (messageObject.Event == "add emoji")
+            {
+                
+            }
+            else if (messageObject.Event == "remove emoji")
+            {
+                
             }
 
             Array.Clear(buffer, 0, buffer.Length);
         }
-        //_sockets.Remove(socket);
+       _webSocketManager.RemoveSocket(socket);
     }
-
-   
-
-
-    /*private void AddToSocketToDictionary(string userId, WebSocket socket)
-    {
-        Console.WriteLine("-------------------------------------------------");
-        Console.WriteLine($"username: {userId} add to the directory");
-        Console.WriteLine($"socket in group: {SocketGroups.Count} before add socket");
-        if (SocketGroups.ContainsKey(userId))
-        {
-            SocketGroups[userId].Add(socket);
-        }
-        else
-        {
-            Console.WriteLine($"add: {userId}");
-            SocketGroups.Add(userId, new List<WebSocket>{socket});
-            
-        }
-        Console.WriteLine($"socket in group: {SocketGroups.Count} after add socket");
-    }*/
-    
     
     private async Task SendMessageToGroup(List<WebSocket> targetUsers, byte[] message)
     {
@@ -114,6 +76,16 @@ public class ChatService : IChatService
             Console.WriteLine("message counter");
             await user.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None);
         }
+    }
+
+    private async Task handleMessage(WebSocketObj messageObject,  WebSocketReceiveResult? result, byte[] buffer)
+    {
+        var chatId = messageObject.ChatId;
+        var users = _userRepository.GetUserByChatId(chatId);
+        var targetusers = _webSocketManager.FindTargetedUser(users);
+
+        //SaveMessage(messageObject);
+        await SendMessageToGroup(targetusers, buffer[..result.Count]);
     }
 
     private void SaveMessage(Message message)

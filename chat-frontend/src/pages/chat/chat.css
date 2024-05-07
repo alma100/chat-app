@@ -41,6 +41,7 @@
 .chatOwnMessage {
     border: 2px solid green;
     margin-right: 4px;
+    
 }
 
 .chatRecivedMessage {
@@ -49,7 +50,7 @@
 }
 
 
-.chatOwnMessageWrapper,
+/*.chatOwnMessageWrapper,
 .chatMessageWrapper {
     display: flex;
     flex-direction: row;
@@ -57,21 +58,45 @@
     margin-top: 10px;
 
 }
-
+  
 .chatOwnMessageWrapper {
     align-self: flex-end;
+}*/
+.owenMessageContainer{
+    display: flex;
+    flex-direction: row-reverse;
+    
+}
+.chatOwnMessageWrapper{
+    position: relative;
+    left:145px;
+    max-width: 150px;
+    width: auto;
+    margin-bottom: 10px;
 }
 
-.chatMessageWrapper {
+/*.chatMessageWrapper {
     align-self: flex-start;
+}*/
+
+.owenChatEmoji{
+    position: relative;
+    left:100px;
+    width: 50px;
+    height: 25px;
+    background-color: azure;
+    border-radius: 8px;
 }
 
-
+.ownChatuserIcon{
+    position: relative;
+    left:150px;
+    bottom: 50px;
+}
 .chatuserIcon,
 .ownChatuserIcon {
     width: 40px;
     height: 40px;
-
 }
 
 .chatuserIcon {
@@ -242,5 +267,7 @@
     border:  1px solid;
     text-align: center;
 }
+
+
 
 

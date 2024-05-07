@@ -1,6 +1,7 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using chat_WebSockets_server.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace chat_WebSockets_server.WebSocketController;
@@ -15,6 +16,7 @@ public class WebSocketController : ControllerBase
     }
 
     [Route("/ws")]
+    [Authorize(Roles = "user")]
     public async Task Get()
     {
        
