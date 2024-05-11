@@ -34,72 +34,109 @@
     padding: 5px;
     text-align: left;
 
-    border-radius: 8px;
+    
     height: auto;
 }
 
 .chatOwnMessage {
     border: 2px solid green;
     margin-right: 4px;
-    
+    border-radius: 8px 8px 0px 8px;
 }
 
 .chatRecivedMessage {
+    position: relative;
+    
     border: 2px solid red;
-    margin-left: 4px;
+    margin-left: 35px;
+    border-radius: 8px 8px 8px 0px;
 }
 
 
-/*.chatOwnMessageWrapper,
+.chatOwnMessageWrapper,
 .chatMessageWrapper {
-    display: flex;
-    flex-direction: row;
-    margin-bottom: 10px;
-    margin-top: 10px;
+    margin-top: 30px;
 
 }
   
-.chatOwnMessageWrapper {
-    align-self: flex-end;
-}*/
+
 .owenMessageContainer{
     display: flex;
     flex-direction: row-reverse;
-    
 }
+
+.messageContentContainer{
+    display: flex;
+    flex-direction: row;
+}
+
+.messageContainer{
+    display: flex;
+    position: relative;
+    left: 10px;
+    align-items: center;
+}
+
 .chatOwnMessageWrapper{
     position: relative;
-    left:145px;
-    max-width: 150px;
+    max-width: 295px;
     width: auto;
-    margin-bottom: 10px;
 }
 
-/*.chatMessageWrapper {
-    align-self: flex-start;
-}*/
+.chatMessageWrapper {
+    position: relative;
+    max-width: 300px;
+    width: auto;
+}
 
 .owenChatEmoji{
-    position: relative;
-    left:100px;
-    width: 50px;
-    height: 25px;
+    position: absolute;
+    right: 5px;
+    bottom: -15px;
+    max-width: 70px;
+    min-width: 20px;
+    height: 20px;
     background-color: azure;
     border-radius: 8px;
+    display: flex;
 }
 
-.ownChatuserIcon{
-    position: relative;
-    left:150px;
-    bottom: 50px;
+.chatEmoji{
+    position: absolute;
+    bottom: -15px;
+    right: -5px;
+    max-width: 70px;
+    min-width: 20px;
+    height: 20px;
+    background-color: azure;
+    border-radius: 8px;
+    display: flex;
 }
-.chatuserIcon,
-.ownChatuserIcon {
-    width: 40px;
-    height: 40px;
+
+.chatEmojiContent{
+    margin-right: -3px;
+    font-size: 15px;
+}
+
+.addEmoji{
+    position: absolute;
+    left: 110%;
+}
+
+.addEmojiIcon{
+    width: 15px;
+    height: 15px;
+}
+
+.chatuserIcon{
+    width: 30px;
+    height: 30px;
 }
 
 .chatuserIcon {
+    position: absolute;
+    top: 80%;
+    left:0;
     margin-left: 5px;
 }
 

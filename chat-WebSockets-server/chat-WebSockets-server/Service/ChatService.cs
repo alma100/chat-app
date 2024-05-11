@@ -52,15 +52,25 @@ public class ChatService : IChatService
             }
             else if(messageObject.Event == "message")
             {
+                if (messageObject.Message != null)
+                {
+                    Console.WriteLine($"Message {messageObject.Message}");
+                }
+                else
+                {
+                    Console.WriteLine("Message is null.");
+                }
                 await handleMessage(messageObject, result, buffer);
             }
             else if (messageObject.Event == "add emoji")
             {
-                
+                //add emoji to database
+                Console.WriteLine("add emoji");
+                await handleMessage(messageObject, result, buffer);
             }
             else if (messageObject.Event == "remove emoji")
             {
-                
+                await handleMessage(messageObject, result, buffer);
             }
 
             Array.Clear(buffer, 0, buffer.Length);
@@ -80,7 +90,7 @@ public class ChatService : IChatService
 
     private async Task handleMessage(WebSocketObj messageObject,  WebSocketReceiveResult? result, byte[] buffer)
     {
-        var chatId = messageObject.ChatId;
+        var chatId = messageObject.Message.ChatId;
         var users = _userRepository.GetUserByChatId(chatId);
         var targetusers = _webSocketManager.FindTargetedUser(users);
 

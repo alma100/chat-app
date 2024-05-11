@@ -8,6 +8,8 @@ import User from "../../icons/user.png"
 import Close from "../../icons/close.png"
 import Submit from "../../icons/submit.png"
 import Minus from "../../icons/minus.png"
+import Happiness from "../../icons/happiness.png"
+import Emoji from "./emoji";
 
 const Chat = ({ profileData, setProfileData }) => {
 
@@ -17,8 +19,14 @@ const Chat = ({ profileData, setProfileData }) => {
     const [searchFetchRes, setSearchFetchRes] = useState(null);
     const [searchFieldError, setSearchFieldError] = useState(null); //searchField erro handling!!
 
+
     const [activeChat, setActiveChat] = useState([]);
     const [pendingChat, setPendingChat] = useState([]);
+
+    //activeChat component
+    const [onFocusMessage, setOnFocusMessage] = useState(null);
+    const [clickEmojiPicker, setClickEmojiPicker] = useState(null);
+
 
     const [allChatData, setAllChatData] = useState([]);
 
@@ -32,6 +40,33 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const WS_URL = "ws://localhost:5102/ws";
 
+    const REACTIONS = [
+        {
+            emoji: "😂",
+            label: "joy",
+        },
+        {
+            emoji: "😍",
+            label: "love",
+        },
+        {
+            emoji: "😮",
+            label: "wow",
+        },
+        {
+            emoji: "🙌",
+            label: "yay",
+        },
+        {
+            emoji: "👍",
+            label: "up",
+        },
+        {
+            emoji: "👎",
+            label: "down",
+        },
+    ];
+
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
         share: true,
@@ -39,6 +74,7 @@ const Chat = ({ profileData, setProfileData }) => {
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
     });
+
 
     useEffect(() => {
         var szelesseg = window.innerWidth;
@@ -76,8 +112,9 @@ const Chat = ({ profileData, setProfileData }) => {
     useEffect(() => {
         if (lastMessage !== null) {
             const messageObject = JSON.parse(lastMessage.data);
-            if (messageObject.message !== "connection opend") {
-                handleIncomingMessage(messageObject);
+            console.log(messageObject);
+            if (messageObject.Event !== "connection request") {
+                handleIncomingMessage(messageObject.Message, messageObject.Event);
                 if (activeChat.length !== 0) {
                     setTimeout(() => {
                         bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -91,15 +128,48 @@ const Chat = ({ profileData, setProfileData }) => {
 
 
     useEffect(() => {
+        console.log("lefut")
         if (activeChat.length !== 0) {
+            console.log("lefut1")
             setTimeout(() => {
                 bottomRef.current.scrollIntoView({ behavior: "smooth" });
             }, 100);
         }
     }, [activeChat])
 
-    const handleIncomingMessage = (messageObj) => {
+    const handleIncomingMessage = (messageObj, event) => {
 
+        if(event === "message"){
+            handleIncomingMessageEvent(messageObj);
+        }else if(event === "add emoji"){
+            handleIncomingAddEmojiEvent(messageObj);
+        }else if(event === "remove emoji"){
+            handleIncomingAddEmojiEvent(messageObj);
+        }
+    }
+
+    const handleIncomingAddEmojiEvent = (messageObj) => {
+        
+        const updatedMessageHistory = { ...messageHistory };
+
+        console.log(messageObj);
+
+        let message = messageObj;
+
+        message.UserId = updatedMessageHistory[messageObj.ChatId][messageObj.MessageId].UserId;
+
+        updatedMessageHistory[messageObj.ChatId][messageObj.MessageId] = message;
+
+        setMessageHistory(updatedMessageHistory);
+    }
+
+    const handleIncomingRemoveEmojiEvent = (messageObj) => {
+
+        const updatedMessageHistory = { ...messageHistory };
+
+    }
+
+    const handleIncomingMessageEvent = (messageObj) => {
         if (messageObj.ChatId in messageHistory) {
             console.log("incomingIf")
             setMessageHistory({
@@ -218,12 +288,20 @@ const Chat = ({ profileData, setProfileData }) => {
 
         if (messageInput[chatId] !== "") {
             let message = {
-                Event: "message",
                 UserId: profileData.id,
                 Content: messageInput[chatId],
-                ChatId: chatId
+                Emoji: [],
+                ChatId: chatId,
             };
-            sendMessage(JSON.stringify(message));
+
+            let input = {
+                Event: "message",
+                UserId: profileData.id,
+                Content: null,
+                Message: message,
+                CreatedAt: new Date()
+            }
+            sendMessage(JSON.stringify(input));
         }
 
         saveOrUpdateMessages(chatId, "");
@@ -269,6 +347,13 @@ const Chat = ({ profileData, setProfileData }) => {
         setShowCloseIcon(null);
     }
 
+    const emojiClickHandler = (messageId) => {
+
+        setClickEmojiPicker(messageId);
+
+    }
+
+
     // --------------- Warning methods ----------------------
 
     const chatMessageWarningHandler = (chatId, index) => {
@@ -276,6 +361,13 @@ const Chat = ({ profileData, setProfileData }) => {
         setShowCloseIcon(index);
 
     }
+
+    //----------------- emoji --------------------------------
+
+    const emojiByLabel = (label) => {
+        const reaction = REACTIONS.find(reaction => reaction.label === label);
+        return reaction ? reaction.emoji : null;
+    };
 
     return (
         <>
@@ -412,20 +504,98 @@ const Chat = ({ profileData, setProfileData }) => {
                                                     {
                                                         messageHistory[value].map((message, index) => {
                                                             if (message.UserId === profileData.id) {
-                                                                return <div className="chatOwnMessageWrapper">
+                                                                return <div className="chatOwnMessageWrapper"
+                                                                    id={message.ChatId + "." + index}
+                                                                    onMouseEnter={() => { setOnFocusMessage(message.ChatId + "." + index) }}
+                                                                    onMouseLeave={() => { setOnFocusMessage(null) }}>
                                                                     <div className="owenMessageContainer">
-                                                                        <div key={index} className="chatOwnMessage">{message.Content} </div>
+                                                                        <div key={message.ChatId + index}
+                                                                            className="chatOwnMessage">
+                                                                            {message.Content}
+                                                                            <div className="owenChatEmoji" style={{
+                                                                                visibility: message.Emoji.length === 0 ? 'hidden' : 'visible',
+                                                                            }}>
+                                                                                {
+                                                                                    message.Emoji.map((value, index) => {
+                                                                                        if (index < 3) {
+                                                                                            return <span className="chatEmojiContent">
+                                                                                                {emojiByLabel(value)}
+                                                                                            </span>
+                                                                                        }
+                                                                                    })
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                        
                                                                     </div>
-                                                                    
-                                                                    <div className="owenChatEmoji">emoji</div>
-                                                                    
-                                                                    
-                                                                    
+                                                                    <div style={{
+                                                                        display: message.Emoji.length === 0 ? 'none' : 'block',
+
+                                                                    }}>
+                                                                    </div>
+
                                                                 </div>
                                                             } else {
-                                                                return <div className="chatMessageWrapper"><span className="chatOwnProfile">
-                                                                    <img className="chatuserIcon" src={User} alt="Show password Icon" /></span>
-                                                                    <div key={index} className="chatRecivedMessage">{message.Content}</div>
+                                                                return <div className="chatMessageWrapper"
+                                                                    id={message.ChatId + "." + index}
+                                                                    onMouseEnter={() => { setOnFocusMessage(message.ChatId + "." + index) }}
+                                                                    onMouseLeave={() => { setOnFocusMessage(null), setClickEmojiPicker(null) }}>
+                                                                    <div className="messageContentContainer">
+
+                                                                        <img className="chatuserIcon" src={User} alt="chat user Icon" />
+
+                                                                        <div className="messageContainer">
+                                                                            <div key={index} className="chatRecivedMessage">
+                                                                                {message.Content}
+                                                                                <div className="chatEmoji"
+                                                                                    style={{
+                                                                                        visibility: message.Emoji.length === 0 ? 'hidden' : 'visible',
+                                                                                    }}>
+                                                                                    {
+                                                                                        message.Emoji.map((value, index) => {
+                                                                                            if (index < 3) {
+                                                                                                return <span className="chatEmojiContent">
+                                                                                                    {emojiByLabel(value)}
+                                                                                                </span>
+                                                                                            }
+                                                                                        })
+                                                                                    }
+                                                                                </div>
+
+                                                                            </div>
+
+
+                                                                            <div className="addEmoji"
+                                                                                style={{
+                                                                                    visibility: onFocusMessage === message.ChatId + "." + index ? 'visible' : 'hidden',
+                                                                                }}
+                                                                                onClick={() => { emojiClickHandler(message.ChatId + "." + index) }}>
+                                                                                {
+                                                                                    clickEmojiPicker === message.ChatId + "." + index ? (
+
+                                                                                        <Emoji  
+                                                                                        chatId={message.ChatId} 
+                                                                                        messageId={index}
+                                                                                        setMessageHistory={setMessageHistory}
+                                                                                        messageHistory={messageHistory}
+                                                                                        sendJsonMessage={sendJsonMessage} 
+                                                                                        reactions={REACTIONS}
+                                                                                        profileData={profileData}/>
+
+                                                                                    ) : (
+                                                                                        <></>
+                                                                                    )
+                                                                                }
+
+                                                                                <img className="addEmojiIcon" src={Happiness} alt="chat add emoji Icon" />
+
+                                                                            </div>
+
+                                                                        </div>
+
+
+                                                                    </div>
+
                                                                 </div>
                                                             }
 
