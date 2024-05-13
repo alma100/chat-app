@@ -4,28 +4,35 @@ import "./emoji.css"
 const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonMessage, reactions, profileData }) => {
 
 
+    function includesLabel(emojiList, label) {
+        return emojiList.some(emojiObj => emojiObj.EmojiName === label);
+    }
+
     const emojiPicker = (value, chatId, messageId) => {
         console.log(value.emoji)
-        const updatedMessageHistory = { ...messageHistory };
-
-        let currentMessage = messageHistory[chatId][messageId];
+        
+        let currentMessage = messageHistory[chatId].find(m => m.MessageId === messageId);
 
         let input = {};
+
+        console.log(messageHistory[chatId])
+        console.log(messageId)
+        console.log(currentMessage)
 
         let message = {
             MessageId: messageId,
             UserId: profileData.id,
-            Content: messageHistory[chatId][messageId].Content,
+            Content: currentMessage.Content,
             Emoji: [],
             ChatId: chatId,
         };
 
 
-        if (currentMessage.Emoji.includes(value.label)) {
-            updatedMessageHistory[chatId][messageId].Emoji = updatedMessageHistory[chatId][messageId].Emoji.filter(emoji => emoji !== value.label);
+        if (includesLabel(currentMessage.Emoji, value.label)) {
+            currentMessage.Emoji = currentMessage.Emoji.filter(emoji => emoji.EmojiName !== value.label);
 
-            message.Emoji = updatedMessageHistory[chatId][messageId].Emoji;
-
+            message.Emoji = currentMessage.Emoji;
+          
             console.log("remove emoji");
 
             input = {
@@ -37,13 +44,16 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
             }
 
         } else {
-            updatedMessageHistory[chatId][messageId].Emoji.push(value.label);
 
-            message.Emoji = updatedMessageHistory[chatId][messageId].Emoji;
+            let emojiObj = {
+                EmojiName: value.label,
+                UserId: profileData.id,
+                MessageId: messageId
+            }
 
-            console.log(value.label)
+            currentMessage.Emoji.push(emojiObj);
 
-            console.log(message.Emoji)
+            message.Emoji = currentMessage.Emoji;
 
             input = {
                 Event: "add emoji",
@@ -54,7 +64,7 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
             }
         }
 
-        //setMessageHistory(updatedMessageHistory);
+        console.log(input)
         sendJsonMessage(input);
     }
 

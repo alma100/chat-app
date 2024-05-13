@@ -6,6 +6,7 @@ namespace chat_WebSockets_server.Context;
 
 public class ChatContext : IdentityDbContext<User>
 {
+    public DbSet<Emoji> Emoji { get; set; }
     public DbSet<Message> Message { get; set; }
 
     public DbSet<Chat> Chat { get; set; }
@@ -13,5 +14,18 @@ public class ChatContext : IdentityDbContext<User>
     public ChatContext (DbContextOptions<ChatContext> options)
         : base(options)
     {
+    }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        
+        modelBuilder.Entity<Message>()
+            .HasIndex(m => m.CreatedAt)
+            .HasName("IX_Message_CreatedAt");
+
+        modelBuilder.Entity<Message>()
+            .HasIndex(m => m.ChatId)
+            .HasName("IX_Message_ChatId");
     }
 }

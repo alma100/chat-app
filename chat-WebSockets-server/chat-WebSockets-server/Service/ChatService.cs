@@ -60,17 +60,17 @@ public class ChatService : IChatService
                 {
                     Console.WriteLine("Message is null.");
                 }
-                await handleMessage(messageObject, result, buffer);
+                await handleMessage(messageObject, "message");
             }
             else if (messageObject.Event == "add emoji")
             {
                 //add emoji to database
                 Console.WriteLine("add emoji");
-                await handleMessage(messageObject, result, buffer);
+                await handleMessage(messageObject, "add emoji");
             }
             else if (messageObject.Event == "remove emoji")
             {
-                await handleMessage(messageObject, result, buffer);
+                await handleMessage(messageObject, "remove emoji");
             }
 
             Array.Clear(buffer, 0, buffer.Length);
@@ -78,29 +78,48 @@ public class ChatService : IChatService
        _webSocketManager.RemoveSocket(socket);
     }
     
-    private async Task SendMessageToGroup(List<WebSocket> targetUsers, byte[] message)
+    private async Task SendMessageToGroup(List<WebSocket> targetUsers,  WebSocketObj messageObject)
     {
         
+        var jsonMessage = JsonSerializer.Serialize(messageObject);
+
+        
+        var jsonBytes = Encoding.UTF8.GetBytes(jsonMessage);
+
         foreach (var user in targetUsers)
         {
             Console.WriteLine("message counter");
-            await user.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None);
+            await user.SendAsync(jsonBytes, WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 
-    private async Task handleMessage(WebSocketObj messageObject,  WebSocketReceiveResult? result, byte[] buffer)
+    private async Task handleMessage(WebSocketObj messageObject, string eventType)
     {
         var chatId = messageObject.Message.ChatId;
         var users = _userRepository.GetUserByChatId(chatId);
         var targetusers = _webSocketManager.FindTargetedUser(users);
 
-        //SaveMessage(messageObject);
-        await SendMessageToGroup(targetusers, buffer[..result.Count]);
+        var message = new Message();
+        
+        if (eventType == "message")
+        {
+            message = await SaveMessage(messageObject.Message);
+        }else if (eventType == "add emoji" || eventType == "remove emoji")
+        {
+            message = await UpdateMessageEmoji(messageObject.Message);
+        }
+        
+        messageObject.Message = message;
+        await SendMessageToGroup(targetusers, messageObject);
     }
 
-    private void SaveMessage(Message message)
+    private async Task<Message>SaveMessage(Message message)
     {
-        _messageRepository.AddMessage(message);
-        
+        return await _messageRepository.AddMessage(message);
+    }
+    
+    private async Task<Message>UpdateMessageEmoji(Message message)
+    {
+        return await _messageRepository.UpdateMessageEmoji(message);
     }
 }

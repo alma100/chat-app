@@ -183,6 +183,32 @@ namespace chat_HTTP_server.Migrations
                     b.ToTable("Chat");
                 });
 
+            modelBuilder.Entity("chat_HTTP_server.Model.Emoji", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("EmojiName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.ToTable("Emoji");
+                });
+
             modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
                 {
                     b.Property<int>("MessageId")
@@ -198,7 +224,7 @@ namespace chat_HTTP_server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
@@ -207,7 +233,11 @@ namespace chat_HTTP_server.Migrations
 
                     b.HasKey("MessageId");
 
-                    b.HasIndex("ChatId");
+                    b.HasIndex("ChatId")
+                        .HasDatabaseName("IX_Message_ChatId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Message_CreatedAt");
 
                     b.ToTable("Message");
                 });
@@ -351,6 +381,15 @@ namespace chat_HTTP_server.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("chat_HTTP_server.Model.Emoji", b =>
+                {
+                    b.HasOne("chat_HTTP_server.Model.Message", null)
+                        .WithMany("Emoji")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
                 {
                     b.HasOne("chat_HTTP_server.Model.Chat", null)
@@ -363,6 +402,11 @@ namespace chat_HTTP_server.Migrations
             modelBuilder.Entity("chat_HTTP_server.Model.Chat", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
+                {
+                    b.Navigation("Emoji");
                 });
 #pragma warning restore 612, 618
         }

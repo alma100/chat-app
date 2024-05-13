@@ -10,6 +10,7 @@ import Submit from "../../icons/submit.png"
 import Minus from "../../icons/minus.png"
 import Happiness from "../../icons/happiness.png"
 import Emoji from "./emoji";
+import DisplayEmoji from "./displayEmoji";
 
 const Chat = ({ profileData, setProfileData }) => {
 
@@ -121,8 +122,6 @@ const Chat = ({ profileData, setProfileData }) => {
                     }, 100);
                 }
             }
-
-            console.log("connection");
         }
     }, [lastMessage]);
 
@@ -139,43 +138,46 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const handleIncomingMessage = (messageObj, event) => {
 
-        if(event === "message"){
+        if (event === "message") {
             handleIncomingMessageEvent(messageObj);
-        }else if(event === "add emoji"){
+        } else if (event === "add emoji") {
             handleIncomingAddEmojiEvent(messageObj);
-        }else if(event === "remove emoji"){
+        } else if (event === "remove emoji") {
             handleIncomingAddEmojiEvent(messageObj);
         }
     }
 
     const handleIncomingAddEmojiEvent = (messageObj) => {
-        
+
         const updatedMessageHistory = { ...messageHistory };
 
-        console.log(messageObj);
-
-        let message = messageObj;
-
-        message.UserId = updatedMessageHistory[messageObj.ChatId][messageObj.MessageId].UserId;
-
-        updatedMessageHistory[messageObj.ChatId][messageObj.MessageId] = message;
-
+        let message = updatedMessageHistory[messageObj.ChatId].map(m => {
+            if (m.MessageId === messageObj.MessageId) {
+                return messageObj;
+            }
+            else {
+                return m;
+            }
+        });
+        updatedMessageHistory[messageObj.ChatId] = message;
         setMessageHistory(updatedMessageHistory);
     }
 
-    const handleIncomingRemoveEmojiEvent = (messageObj) => {
-
-        const updatedMessageHistory = { ...messageHistory };
-
+    function messageIsExist(messageList, messageId) {
+        return messageList.some(messageObj => messageObj.MessageId === messageId);
     }
 
     const handleIncomingMessageEvent = (messageObj) => {
+        console.log(messageHistory)
         if (messageObj.ChatId in messageHistory) {
-            console.log("incomingIf")
-            setMessageHistory({
-                ...messageHistory,
-                [messageObj.ChatId]: [...messageHistory[messageObj.ChatId], messageObj]
-            });
+            if (!messageIsExist(messageHistory[messageObj.ChatId], messageObj.MessageId)) {
+                console.log("incomingIf")
+                setMessageHistory({
+                    ...messageHistory,
+                    [messageObj.ChatId]: [...messageHistory[messageObj.ChatId], messageObj]
+                });
+            }
+
         } else {
             console.log("incomingElse")
             setMessageHistory({
@@ -357,7 +359,6 @@ const Chat = ({ profileData, setProfileData }) => {
     // --------------- Warning methods ----------------------
 
     const chatMessageWarningHandler = (chatId, index) => {
-        console.log(messageHistory[chatId]);
         setShowCloseIcon(index);
 
     }
@@ -506,7 +507,7 @@ const Chat = ({ profileData, setProfileData }) => {
                                                             if (message.UserId === profileData.id) {
                                                                 return <div className="chatOwnMessageWrapper"
                                                                     id={message.ChatId + "." + index}
-                                                                    onMouseEnter={() => { setOnFocusMessage(message.ChatId + "." + index) }}
+                                                                    onMouseEnter={() => { setOnFocusMessage(message.MessageId) }}
                                                                     onMouseLeave={() => { setOnFocusMessage(null) }}>
                                                                     <div className="owenMessageContainer">
                                                                         <div key={message.ChatId + index}
@@ -518,15 +519,16 @@ const Chat = ({ profileData, setProfileData }) => {
                                                                                 {
                                                                                     message.Emoji.map((value, index) => {
                                                                                         if (index < 3) {
-                                                                                            return <span className="chatEmojiContent">
-                                                                                                {emojiByLabel(value)}
-                                                                                            </span>
+                                                                                            return <DisplayEmoji 
+                                                                                            emojiValue={value} 
+                                                                                            reactions={REACTIONS}
+                                                                                            />
                                                                                         }
                                                                                     })
                                                                                 }
                                                                             </div>
                                                                         </div>
-                                                                        
+
                                                                     </div>
                                                                     <div style={{
                                                                         display: message.Emoji.length === 0 ? 'none' : 'block',
@@ -538,7 +540,7 @@ const Chat = ({ profileData, setProfileData }) => {
                                                             } else {
                                                                 return <div className="chatMessageWrapper"
                                                                     id={message.ChatId + "." + index}
-                                                                    onMouseEnter={() => { setOnFocusMessage(message.ChatId + "." + index) }}
+                                                                    onMouseEnter={() => { setOnFocusMessage(message.MessageId), console.log(message.MessageId) }}
                                                                     onMouseLeave={() => { setOnFocusMessage(null), setClickEmojiPicker(null) }}>
                                                                     <div className="messageContentContainer">
 
@@ -554,9 +556,10 @@ const Chat = ({ profileData, setProfileData }) => {
                                                                                     {
                                                                                         message.Emoji.map((value, index) => {
                                                                                             if (index < 3) {
-                                                                                                return <span className="chatEmojiContent">
-                                                                                                    {emojiByLabel(value)}
-                                                                                                </span>
+                                                                                                return <DisplayEmoji 
+                                                                                                emojiValue={value} 
+                                                                                                reactions={REACTIONS}
+                                                                                                />
                                                                                             }
                                                                                         })
                                                                                     }
@@ -567,20 +570,20 @@ const Chat = ({ profileData, setProfileData }) => {
 
                                                                             <div className="addEmoji"
                                                                                 style={{
-                                                                                    visibility: onFocusMessage === message.ChatId + "." + index ? 'visible' : 'hidden',
+                                                                                    visibility: onFocusMessage === message.MessageId ? 'visible' : 'hidden',
                                                                                 }}
-                                                                                onClick={() => { emojiClickHandler(message.ChatId + "." + index) }}>
+                                                                                onClick={() => { emojiClickHandler(message.MessageId) }}>
                                                                                 {
-                                                                                    clickEmojiPicker === message.ChatId + "." + index ? (
+                                                                                    clickEmojiPicker === message.MessageId ? (
 
-                                                                                        <Emoji  
-                                                                                        chatId={message.ChatId} 
-                                                                                        messageId={index}
-                                                                                        setMessageHistory={setMessageHistory}
-                                                                                        messageHistory={messageHistory}
-                                                                                        sendJsonMessage={sendJsonMessage} 
-                                                                                        reactions={REACTIONS}
-                                                                                        profileData={profileData}/>
+                                                                                        <Emoji
+                                                                                            chatId={message.ChatId}
+                                                                                            messageId={message.MessageId}
+                                                                                            setMessageHistory={setMessageHistory}
+                                                                                            messageHistory={messageHistory}
+                                                                                            sendJsonMessage={sendJsonMessage}
+                                                                                            reactions={REACTIONS}
+                                                                                            profileData={profileData} />
 
                                                                                     ) : (
                                                                                         <></>

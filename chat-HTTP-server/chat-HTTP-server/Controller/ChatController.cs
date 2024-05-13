@@ -48,7 +48,23 @@ public class ChatController : ControllerBase
     
         return Ok(userDtos);
     }
-
+    
+    [HttpPost("getUserById")]
+    [Authorize(Roles = "user")]
+    public async Task<ActionResult> GetUserById([FromBody]string userId)
+    {
+        Console.WriteLine(userId);
+        var result = await _userRepository.GetUserById(userId);
+        var userDtos = new UserDto
+        {
+            Id = result.Id,
+            FirstName = result.FirstName,
+            LastName = result.LastName
+        };
+    
+        return Ok(userDtos);
+    }
+    
     [HttpPost("creatChat")]
     [Authorize(Roles = "user")]
     public async Task<IActionResult> CreateChat(CreateChatRequest request)

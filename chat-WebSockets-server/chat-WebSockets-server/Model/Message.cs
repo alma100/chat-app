@@ -10,7 +10,7 @@ public class Message
     
     public DateTime? CreatedAt { get; set; }
     
-    public List<string>? Emoji { get; set; }
+    public List<Emoji>? Emoji { get; set; }
     
     public int ChatId { get; set; }
 }

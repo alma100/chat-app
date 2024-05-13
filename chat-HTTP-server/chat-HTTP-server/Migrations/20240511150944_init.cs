@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace chat_HTTP_server.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -202,7 +202,7 @@ namespace chat_HTTP_server.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ChatId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -213,6 +213,27 @@ namespace chat_HTTP_server.Migrations
                         column: x => x.ChatId,
                         principalTable: "Chat",
                         principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Emoji",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmojiName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MessageId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Emoji", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Emoji_Message_MessageId",
+                        column: x => x.MessageId,
+                        principalTable: "Message",
+                        principalColumn: "MessageId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -261,9 +282,19 @@ namespace chat_HTTP_server.Migrations
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Emoji_MessageId",
+                table: "Emoji",
+                column: "MessageId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Message_ChatId",
                 table: "Message",
                 column: "ChatId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Message_CreatedAt",
+                table: "Message",
+                column: "CreatedAt");
         }
 
         /// <inheritdoc />
@@ -288,13 +319,16 @@ namespace chat_HTTP_server.Migrations
                 name: "ChatUser");
 
             migrationBuilder.DropTable(
-                name: "Message");
+                name: "Emoji");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Message");
 
             migrationBuilder.DropTable(
                 name: "Chat");
