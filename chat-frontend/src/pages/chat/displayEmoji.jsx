@@ -31,7 +31,7 @@ const DisplayEmoji = ({ emojiValue, reactions }) => {
 
     const showUser = async (emojiValue) => {
         let res = await getUserFetch(emojiValue.UserId);
-        let usersFullName = res.firstName + res.lastName;
+        let usersFullName = res.firstName + " " + res.lastName;
         setUserName(usersFullName);
         console.log(res)
     }

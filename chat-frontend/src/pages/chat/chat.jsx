@@ -37,6 +37,7 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
+    const [bottomRefe, setBottomRef] = useState([])
     const bottomRef = useRef();
 
     const WS_URL = "ws://localhost:5102/ws";
@@ -75,6 +76,12 @@ const Chat = ({ profileData, setProfileData }) => {
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
     });
+
+    useEffect(() => {
+
+        console.log(bottomRef)
+        console.log(bottomRefe)
+    }, [activeChat])
 
 
     useEffect(() => {
@@ -129,12 +136,26 @@ const Chat = ({ profileData, setProfileData }) => {
     useEffect(() => {
         console.log("lefut")
         if (activeChat.length !== 0) {
-            console.log("lefut1")
+            setBottomRef([...bottomRefe, bottomRef.current])
+            handleBottomReference()
+            console.log(bottomRefe)
             setTimeout(() => {
+                console.log(bottomRef.current)
+                console.log(activeChat)
                 bottomRef.current.scrollIntoView({ behavior: "smooth" });
             }, 100);
         }
     }, [activeChat])
+
+    const handleBottomReference = () => {
+        bottomRefe.forEach((id, index) => {
+            /*if (id) {
+              divRefs.current[id] = divRefs.current[id] || [];
+              divRefs.current[id].push(React.createRef());
+            }*/
+            console.log(id)
+        });
+    }
 
     const handleIncomingMessage = (messageObj, event) => {
 
@@ -313,9 +334,9 @@ const Chat = ({ profileData, setProfileData }) => {
 
         const updatedMessages = { ...messageInput };
 
-        updatedMessages[chatId] = message;
-
-        console.log(updatedMessages)
+        let res = splitMessageText(message)
+        console.log(res)
+        updatedMessages[chatId] = res;
         setMessageInput(updatedMessages);
     }
 
@@ -356,6 +377,27 @@ const Chat = ({ profileData, setProfileData }) => {
     }
 
 
+    const splitMessageText = (messageContent) => {
+        console.log(messageContent)
+        let charCounter = 0;
+        let splitedMessageContent = "";
+
+        for (let i = 0; i < messageContent.length; i++) {
+            if (messageContent[i] !== " ") {
+                charCounter++;
+                if (charCounter > 13) {
+                    splitedMessageContent += '\n';
+                    charCounter = 0;
+                }
+                splitedMessageContent += messageContent[i];
+            } else {
+                charCounter = 0;
+                splitedMessageContent += messageContent[i];
+            }
+
+        }
+        return splitedMessageContent
+    }
     // --------------- Warning methods ----------------------
 
     const chatMessageWarningHandler = (chatId, index) => {
@@ -519,9 +561,9 @@ const Chat = ({ profileData, setProfileData }) => {
                                                                                 {
                                                                                     message.Emoji.map((value, index) => {
                                                                                         if (index < 3) {
-                                                                                            return <DisplayEmoji 
-                                                                                            emojiValue={value} 
-                                                                                            reactions={REACTIONS}
+                                                                                            return <DisplayEmoji
+                                                                                                emojiValue={value}
+                                                                                                reactions={REACTIONS}
                                                                                             />
                                                                                         }
                                                                                     })
@@ -556,9 +598,9 @@ const Chat = ({ profileData, setProfileData }) => {
                                                                                     {
                                                                                         message.Emoji.map((value, index) => {
                                                                                             if (index < 3) {
-                                                                                                return <DisplayEmoji 
-                                                                                                emojiValue={value} 
-                                                                                                reactions={REACTIONS}
+                                                                                                return <DisplayEmoji
+                                                                                                    emojiValue={value}
+                                                                                                    reactions={REACTIONS}
                                                                                                 />
                                                                                             }
                                                                                         })
@@ -606,16 +648,15 @@ const Chat = ({ profileData, setProfileData }) => {
 
 
                                                     }
-                                                    <div id="bottom-reference" ref={bottomRef} />
+                                                    <div id={`${value}`} ref={bottomRef} />
                                                 </div>
 
                                             </div>
                                             <div className="chat-input">
                                                 <div className="onlie-Chat-Input-Container">
                                                     <input
-                                                        type="text"
                                                         onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
-                                                        className="registrationInput"
+                                                        className="chat-input-field"
                                                         value={messageInput[value] === undefined ? "" : messageInput[value]}
                                                     >
                                                     </input>

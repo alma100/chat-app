@@ -42,11 +42,12 @@
     border: 2px solid green;
     margin-right: 4px;
     border-radius: 8px 8px 0px 8px;
+    white-space: pre-wrap;
 }
 
 .chatRecivedMessage {
     position: relative;
-    
+    white-space: pre-wrap;
     border: 2px solid red;
     margin-left: 35px;
     border-radius: 8px 8px 8px 0px;
@@ -243,6 +244,12 @@
 .chat-box-overlay::-webkit-scrollbar-thumb
 {
 	background-color: #5A5EB9;
+}
+
+.chat-input-field{
+    width: 200px;
+    border: none;
+    outline: none;
 }
 
 .chat-input{
