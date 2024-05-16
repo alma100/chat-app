@@ -1,7 +1,8 @@
+import { useState } from "react"
 import Eye from "../../icons/eye.png"
 import Hide from "../../icons/hide.png"
 
-const PasswordInput = ({PasswordResult, Password, passwordVisible, PasswordInfoBox,
+const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfoBox,
     setPasswordResult, setPassword, setPasswordConfirm, PasswordConfirmValue,
     setPasswordVisible,
 }) => {
@@ -13,11 +14,8 @@ const PasswordInput = ({PasswordResult, Password, passwordVisible, PasswordInfoB
             if (isPasswordValidChars(input)) {
                 localPassRes++;
                 setPasswordResult(true);
-                
-
             } else {
-                setPasswordResult("notValidChar");
-                
+                setPasswordResult(false);
             }
         }
         setPassword(input);
@@ -35,13 +33,13 @@ const PasswordInput = ({PasswordResult, Password, passwordVisible, PasswordInfoB
             return false;
         }
         if (password === "") {
-            setPasswordResult("");
+            setPasswordResult(false);
             return false;
         } else if (password.length < 2) {  //for demo
-            setPasswordResult("short");
+            setPasswordResult(false);
             return false;
         } else if (password.length > 30) {
-            setPasswordResult("long");
+            setPasswordResult(false);
             return false;
         } else {
             return true;
@@ -79,7 +77,6 @@ const PasswordInput = ({PasswordResult, Password, passwordVisible, PasswordInfoB
                         className="registrationInput"
                         defaultValue={Password !== null ? Password : ""}>
                     </input>
-
                     {
                         PasswordResult === true ? <span>✔</span> :
                             PasswordResult === null ? <span></span> :
@@ -96,6 +93,21 @@ const PasswordInput = ({PasswordResult, Password, passwordVisible, PasswordInfoB
                         )
                     }
 
+                </div>
+
+                <div id="regPassInputContainer" style={{
+                    visibility: PasswordResult === false ? 'visible' : 'hidden',
+                }}>
+                    <div id="regPassInputWrapper" style={{
+                        visibility: PasswordResult === false ? 'visible' : 'hidden',
+                    }}>
+                        Password must be minimum 6 charcter long and contains special, number, uppercase and lowercase character.
+                        <div id="passInputTriangle" sstyle={{
+                            visibility: PasswordResult === false ? 'visible' : 'hidden',
+                        }}>
+
+                        </div>
+                    </div>
                 </div>
 
             </div>

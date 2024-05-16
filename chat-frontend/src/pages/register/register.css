@@ -101,10 +101,39 @@
 }
 
 .registrationPasswordContainer {
+    position: relative;
     padding: 10px;
     display: flex;
     justify-content: center;
     width: 340px;
+}
+
+#regPassInputContainer{
+    position: absolute;
+    top: 0;
+    left: -80%;
+    height: auto;
+    width: 300px;
+    border-radius: 5px;
+    z-index: 10000;
+    background-color: rgb(218, 95, 74);
+    padding: 5px;
+    white-space: pre-wrap;
+    color: #000;
+}
+
+#regPassInputWrapper{
+    position: relative;
+}
+
+#passInputTriangle{
+    position: absolute;
+    top: 10%;
+    right: -7%;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    border-left: 20px solid  rgb(218, 95, 74);
+    z-index: 10;
 }
 
 #regResContainer {
@@ -166,3 +195,4 @@
     /*left: -40%;*/
     height: 5px;
 }
+
