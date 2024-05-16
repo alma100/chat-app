@@ -79,8 +79,8 @@ const Login = ({ setProfileData }) => {
 
     
     return (
-        <>
-            <div id="loginPasswordContainer">
+        <div id="loginRoot">
+            <div id="loginContainer">
 
                 <h2>
                     Log into
@@ -137,7 +137,7 @@ const Login = ({ setProfileData }) => {
                 </div>
 
             </div>
-        </>
+        </div>
 
     )
 }
