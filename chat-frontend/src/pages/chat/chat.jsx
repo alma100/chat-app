@@ -77,11 +77,7 @@ const Chat = ({ profileData, setProfileData }) => {
         withCredentials: true,
     });
 
-    useEffect(() => {
-
-        console.log(bottomRef)
-        console.log(bottomRefe)
-    }, [activeChat])
+    
 
 
     useEffect(() => {
@@ -124,8 +120,11 @@ const Chat = ({ profileData, setProfileData }) => {
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
                 if (activeChat.length !== 0) {
+                    handleBottomReference()
                     setTimeout(() => {
-                        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                        bottomRefe.forEach((ref) => {
+                            ref.scrollIntoView({ behavior: "smooth" });
+                        });
                     }, 100);
                 }
             }
@@ -134,27 +133,29 @@ const Chat = ({ profileData, setProfileData }) => {
 
 
     useEffect(() => {
-        console.log("lefut")
-        if (activeChat.length !== 0) {
-            setBottomRef([...bottomRefe, bottomRef.current])
-            handleBottomReference()
-            console.log(bottomRefe)
-            setTimeout(() => {
-                console.log(bottomRef.current)
-                console.log(activeChat)
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
-            }, 100);
-        }
+        handleBottomReference()
     }, [activeChat])
 
+    useEffect(() => {
+        setTimeout(() => {
+            bottomRefe.forEach((ref) => {
+                console.log(ref)
+                ref.scrollIntoView({ behavior: "smooth" });
+            });
+        }, 100);
+    }, [bottomRefe])
+
     const handleBottomReference = () => {
-        bottomRefe.forEach((id, index) => {
-            /*if (id) {
-              divRefs.current[id] = divRefs.current[id] || [];
-              divRefs.current[id].push(React.createRef());
-            }*/
-            console.log(id)
-        });
+        if (bottomRefe.length < activeChat.length) {
+            console.log(`berakás előtt: ${bottomRef.current}`)
+            setBottomRef([...bottomRefe, bottomRef.current])
+        } else if (bottomRefe.length > activeChat.length) {
+            console.log(`törlés: ${bottomRefe[0]}`)
+            let upgradeBottomRef = bottomRefe.slice(0,-1)
+            setBottomRef(upgradeBottomRef)
+        }else{
+            console.log("buuugggg")
+        }
     }
 
     const handleIncomingMessage = (messageObj, event) => {
@@ -299,11 +300,16 @@ const Chat = ({ profileData, setProfileData }) => {
 
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
             messageBackToOnline(chatDto.id);
+        }else if(!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)){
+            const updatedPendingList = pendingChat.filter(number => number !== chatDto.id);
+            setPendingChat(updatedPendingList)
+            messageBackToOnline(chatDto.id);
         }
+
     }
     //-------------- onlineChat methods --------------
     const closeChatBox = (id) => {
-        const updatedList = activeChat.filter(number => number !== id)
+        const updatedList = activeChat.filter(number => number !== id);
         setActiveChat(updatedList);
     }
 
@@ -404,13 +410,6 @@ const Chat = ({ profileData, setProfileData }) => {
         setShowCloseIcon(index);
 
     }
-
-    //----------------- emoji --------------------------------
-
-    const emojiByLabel = (label) => {
-        const reaction = REACTIONS.find(reaction => reaction.label === label);
-        return reaction ? reaction.emoji : null;
-    };
 
     return (
         <>
