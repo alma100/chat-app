@@ -44,7 +44,14 @@ public class ChatService : IChatService
             { 
                 Console.WriteLine("asd"); 
                 await _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
-                var initRes = new { message = "connection opend" };
+                var initRes = new WebSocketObj
+                {
+                    Event = "connection request",
+                    Content = "connection opend",
+                    CreatedAt = DateTime.Now,
+                    Message = null,
+                    UserId = "server"
+                };
                 string jsonInitRes = JsonSerializer.Serialize(initRes);
                 byte[] initResBuffer = Encoding.UTF8.GetBytes(jsonInitRes);
                 await socket.SendAsync(initResBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
@@ -100,8 +107,11 @@ public class ChatService : IChatService
         var targetusers = _webSocketManager.FindTargetedUser(users);
 
         var message = new Message();
-        
-        if (eventType == "message")
+        if (eventType == "connection request")
+        {
+            
+        }
+        else if (eventType == "message")
         {
             message = await SaveMessage(messageObject.Message);
         }else if (eventType == "add emoji" || eventType == "remove emoji")

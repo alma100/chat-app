@@ -82,7 +82,10 @@ public class ChatController : ControllerBase
 
         var userFullname = users.Where(u => u.Id != userId).Select(u => u.FirstName + " " + u.LastName).ToList();
         var chatId = await _chatRepository.CreateChat(newChat);
-
+        if (chatId == -1)
+        {
+            return BadRequest();
+        }
         var chatTdo = new ChatDto
         {
             Id = chatId,

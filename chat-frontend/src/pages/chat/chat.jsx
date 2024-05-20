@@ -4,13 +4,11 @@ import Navbar from "../Navbar/navbar";
 import { Box, Grid } from "@mui/material";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import "./chat.css"
-import User from "../../icons/user.png"
+
 import Close from "../../icons/close.png"
-import Submit from "../../icons/submit.png"
-import Minus from "../../icons/minus.png"
-import Happiness from "../../icons/happiness.png"
-import Emoji from "./emoji";
-import DisplayEmoji from "./displayEmoji";
+
+
+import ActiveChat from "./activeChat";
 
 const Chat = ({ profileData, setProfileData }) => {
 
@@ -38,7 +36,9 @@ const Chat = ({ profileData, setProfileData }) => {
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
     const [bottomRefe, setBottomRef] = useState([])
-    const bottomRef = useRef();
+    const [scrollPosition, setScrollPosition] = useState(0);
+
+    const bottomRef = useRef(null);
 
     const WS_URL = "ws://localhost:5102/ws";
 
@@ -77,7 +77,7 @@ const Chat = ({ profileData, setProfileData }) => {
         withCredentials: true,
     });
 
-    
+
 
 
     useEffect(() => {
@@ -120,11 +120,29 @@ const Chat = ({ profileData, setProfileData }) => {
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
                 if (activeChat.length !== 0) {
-                    handleBottomReference()
+                    //handleBottomReference()
+                    console.log(bottomRefe)
+
                     setTimeout(() => {
-                        bottomRefe.forEach((ref) => {
-                            ref.scrollIntoView({ behavior: "smooth" });
-                        });
+
+
+                        console.log("EZAZ")
+                        console.log(messageObject.Message.ChatId)
+
+                        let index = -1;
+
+                        activeChat.forEach((id, i) => {
+                            if (id === messageObject.Message.ChatId) {
+                                index = i
+                            }
+                        })
+
+                        console.log(index)
+                        console.log(bottomRefe)
+
+                        bottomRefe[index].scrollIntoView({ behavior: "smooth" });
+
+
                     }, 100);
                 }
             }
@@ -133,27 +151,53 @@ const Chat = ({ profileData, setProfileData }) => {
 
 
     useEffect(() => {
-        handleBottomReference()
+        if (activeChat.length > 0) {
+            console.log(activeChat)
+            console.log(bottomRef.current)
+            handleBottomReference()
+            
+        } else if (activeChat.length === 0 && bottomRefe !== 0) {
+            handleBottomReference()
+        }
     }, [activeChat])
 
     useEffect(() => {
-        setTimeout(() => {
-            bottomRefe.forEach((ref) => {
-                console.log(ref)
-                ref.scrollIntoView({ behavior: "smooth" });
-            });
-        }, 100);
+        if(bottomRefe.length >0){
+            /*let index = -1;
+
+            activeChat.forEach((id, i) => {
+                if (id === messageObject.Message.ChatId) {
+                    index = i
+                }
+            })
+
+            console.log(index)
+            console.log(bottomRefe)*/
+
+            //bottomRefe[index].scrollIntoView({ behavior: "smooth" });
+        
+        }
+        console.log(bottomRefe)
     }, [bottomRefe])
 
     const handleBottomReference = () => {
+
         if (bottomRefe.length < activeChat.length) {
-            console.log(`berakás előtt: ${bottomRef.current}`)
+            console.log(activeChat[activeChat.length - 1])
+
+            console.log(bottomRef.current)
             setBottomRef([...bottomRefe, bottomRef.current])
+            bottomRef.current.scrollIntoView({ behavior: "smooth" });
         } else if (bottomRefe.length > activeChat.length) {
             console.log(`törlés: ${bottomRefe[0]}`)
-            let upgradeBottomRef = bottomRefe.slice(0,-1)
+            let upgradeBottomRef = bottomRefe.slice(0, -1)
             setBottomRef(upgradeBottomRef)
-        }else{
+        }else {
+            bottomRefe.forEach(ref => {
+                ref.scrollIntoView({ behavior: "smooth" });
+            })
+            console.log(bottomRef.current)
+            console.log(bottomRefe)
             console.log("buuugggg")
         }
     }
@@ -277,12 +321,17 @@ const Chat = ({ profileData, setProfileData }) => {
         createChatFetch(chatObj).then(
             res => {
                 console.log(res)
-                setcurrentChatId(res.id);
-                setMessageHistory({
-                    ...messageHistory,
-                    [res.id]: []
-                });
-                setAllChatData([...allChatData, res]);
+                if (res.status !== 400) {
+                    setcurrentChatId(res.id);
+                    setMessageHistory({
+                        ...messageHistory,
+                        [res.id]: []
+                    });
+                    setAllChatData([...allChatData, res]);
+                } else {
+                    console.log("chat exist") //TODO list!! :(
+                }
+
             }
         )
     };
@@ -300,7 +349,7 @@ const Chat = ({ profileData, setProfileData }) => {
 
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
             messageBackToOnline(chatDto.id);
-        }else if(!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)){
+        } else if (!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)) {
             const updatedPendingList = pendingChat.filter(number => number !== chatDto.id);
             setPendingChat(updatedPendingList)
             messageBackToOnline(chatDto.id);
@@ -308,48 +357,6 @@ const Chat = ({ profileData, setProfileData }) => {
 
     }
     //-------------- onlineChat methods --------------
-    const closeChatBox = (id) => {
-        const updatedList = activeChat.filter(number => number !== id);
-        setActiveChat(updatedList);
-    }
-
-    const sendButtonHandler = (chatId) => {
-
-        if (messageInput[chatId] !== "") {
-            let message = {
-                UserId: profileData.id,
-                Content: messageInput[chatId],
-                Emoji: [],
-                ChatId: chatId,
-            };
-
-            let input = {
-                Event: "message",
-                UserId: profileData.id,
-                Content: null,
-                Message: message,
-                CreatedAt: new Date()
-            }
-            sendMessage(JSON.stringify(input));
-        }
-
-        saveOrUpdateMessages(chatId, "");
-    }
-
-    const saveOrUpdateMessages = (chatId, message) => {
-
-        const updatedMessages = { ...messageInput };
-
-        let res = splitMessageText(message)
-        console.log(res)
-        updatedMessages[chatId] = res;
-        setMessageInput(updatedMessages);
-    }
-
-    const sendMessageToTab = (chatId) => {
-        closeChatBox(chatId);
-        setPendingChat([...pendingChat, chatId]);
-    }
 
     const messageBackToOnline = (chatId) => {
         console.log(chatId);
@@ -361,8 +368,10 @@ const Chat = ({ profileData, setProfileData }) => {
             let newOnlineChat = currentActiveChat.slice(1);
             newOnlineChat.push(chatId);
             setActiveChat(newOnlineChat);
+
             upgradedPedingChat.push(firstChatId)
         } else {
+
             setActiveChat([...currentActiveChat, chatId])
         }
         setPendingChat(upgradedPedingChat);
@@ -376,34 +385,9 @@ const Chat = ({ profileData, setProfileData }) => {
         setShowCloseIcon(null);
     }
 
-    const emojiClickHandler = (messageId) => {
+    
+    
 
-        setClickEmojiPicker(messageId);
-
-    }
-
-
-    const splitMessageText = (messageContent) => {
-        console.log(messageContent)
-        let charCounter = 0;
-        let splitedMessageContent = "";
-
-        for (let i = 0; i < messageContent.length; i++) {
-            if (messageContent[i] !== " ") {
-                charCounter++;
-                if (charCounter > 13) {
-                    splitedMessageContent += '\n';
-                    charCounter = 0;
-                }
-                splitedMessageContent += messageContent[i];
-            } else {
-                charCounter = 0;
-                splitedMessageContent += messageContent[i];
-            }
-
-        }
-        return splitedMessageContent
-    }
     // --------------- Warning methods ----------------------
 
     const chatMessageWarningHandler = (chatId, index) => {
@@ -519,156 +503,30 @@ const Chat = ({ profileData, setProfileData }) => {
                             {
                                 activeChat.map((value, index) => {
                                     if (index < 3) {
-                                        return <div className="chat-box" style={{ left: `calc(60vw - ${index * 350}px)` }} key={index}>
-                                            <div className="chat-box-header">
-                                                <div className="chat-box-header-elements">
-                                                    {
-                                                        allChatData.map(obj => {
-                                                            if (obj.id == value) {
-                                                                return obj.usersFullName[0];
-                                                            }
-                                                        })
-                                                    }
-                                                </div>
-                                                <div className="chat-box-toggle">
-                                                    <span onClick={() => { sendMessageToTab(value) }}
-                                                        className="chat-box-toggle-element">
-                                                        <img className="onlineChatMinusIcon" src={Minus} alt="Close chat tab Icon" />
-                                                    </span>
-                                                    <span onClick={() => { closeChatBox(value) }}
-                                                        className="chat-box-toggle-element">
-                                                        <img className="onlineChatCloseIcon" src={Close} alt="Close chat tab Icon" />
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div className="chat-box-body">
-                                                <div className="chat-box-overlay">
-                                                    {
-                                                        messageHistory[value].map((message, index) => {
-                                                            if (message.UserId === profileData.id) {
-                                                                return <div className="chatOwnMessageWrapper"
-                                                                    id={message.ChatId + "." + index}
-                                                                    onMouseEnter={() => { setOnFocusMessage(message.MessageId) }}
-                                                                    onMouseLeave={() => { setOnFocusMessage(null) }}>
-                                                                    <div className="owenMessageContainer">
-                                                                        <div key={message.ChatId + index}
-                                                                            className="chatOwnMessage">
-                                                                            {message.Content}
-                                                                            <div className="owenChatEmoji" style={{
-                                                                                visibility: message.Emoji.length === 0 ? 'hidden' : 'visible',
-                                                                            }}>
-                                                                                {
-                                                                                    message.Emoji.map((value, index) => {
-                                                                                        if (index < 3) {
-                                                                                            return <DisplayEmoji
-                                                                                                emojiValue={value}
-                                                                                                reactions={REACTIONS}
-                                                                                            />
-                                                                                        }
-                                                                                    })
-                                                                                }
-                                                                            </div>
-                                                                        </div>
-
-                                                                    </div>
-                                                                    <div style={{
-                                                                        display: message.Emoji.length === 0 ? 'none' : 'block',
-
-                                                                    }}>
-                                                                    </div>
-
-                                                                </div>
-                                                            } else {
-                                                                return <div className="chatMessageWrapper"
-                                                                    id={message.ChatId + "." + index}
-                                                                    onMouseEnter={() => { setOnFocusMessage(message.MessageId), console.log(message.MessageId) }}
-                                                                    onMouseLeave={() => { setOnFocusMessage(null), setClickEmojiPicker(null) }}>
-                                                                    <div className="messageContentContainer">
-
-                                                                        <img className="chatuserIcon" src={User} alt="chat user Icon" />
-
-                                                                        <div className="messageContainer">
-                                                                            <div key={index} className="chatRecivedMessage">
-                                                                                {message.Content}
-                                                                                <div className="chatEmoji"
-                                                                                    style={{
-                                                                                        visibility: message.Emoji.length === 0 ? 'hidden' : 'visible',
-                                                                                    }}>
-                                                                                    {
-                                                                                        message.Emoji.map((value, index) => {
-                                                                                            if (index < 3) {
-                                                                                                return <DisplayEmoji
-                                                                                                    emojiValue={value}
-                                                                                                    reactions={REACTIONS}
-                                                                                                />
-                                                                                            }
-                                                                                        })
-                                                                                    }
-                                                                                </div>
-
-                                                                            </div>
-
-
-                                                                            <div className="addEmoji"
-                                                                                style={{
-                                                                                    visibility: onFocusMessage === message.MessageId ? 'visible' : 'hidden',
-                                                                                }}
-                                                                                onClick={() => { emojiClickHandler(message.MessageId) }}>
-                                                                                {
-                                                                                    clickEmojiPicker === message.MessageId ? (
-
-                                                                                        <Emoji
-                                                                                            chatId={message.ChatId}
-                                                                                            messageId={message.MessageId}
-                                                                                            setMessageHistory={setMessageHistory}
-                                                                                            messageHistory={messageHistory}
-                                                                                            sendJsonMessage={sendJsonMessage}
-                                                                                            reactions={REACTIONS}
-                                                                                            profileData={profileData} />
-
-                                                                                    ) : (
-                                                                                        <></>
-                                                                                    )
-                                                                                }
-
-                                                                                <img className="addEmojiIcon" src={Happiness} alt="chat add emoji Icon" />
-
-                                                                            </div>
-
-                                                                        </div>
-
-
-                                                                    </div>
-
-                                                                </div>
-                                                            }
-
-                                                        })
-
-
-                                                    }
-                                                    <div id={`${value}`} ref={bottomRef} />
-                                                </div>
-
-                                            </div>
-                                            <div className="chat-input">
-                                                <div className="onlie-Chat-Input-Container">
-                                                    <input
-                                                        onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
-                                                        className="chat-input-field"
-                                                        value={messageInput[value] === undefined ? "" : messageInput[value]}
-                                                    >
-                                                    </input>
-                                                    <div onClick={() => sendButtonHandler(value)}
-                                                        className="online-chat-send-Button-div">
-                                                        <img className="online-chat-icon" src={Submit} alt="Show password Icon" />
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-
-                                        </div>
+                                        return <ActiveChat
+                                            index={index}
+                                            value={value}
+                                            allChatData={allChatData}
+                                            messageHistory={messageHistory}
+                                            setOnFocusMessage={setOnFocusMessage}
+                                            REACTIONS={REACTIONS}
+                                            setClickEmojiPicker={setClickEmojiPicker}
+                                            onFocusMessage={onFocusMessage}
+                                            clickEmojiPicker={clickEmojiPicker}
+                                            bottomRef={bottomRef}
+                                            messageInput={messageInput}
+                                            setMessageInput={setMessageInput}
+                                            activeChat={activeChat}
+                                            setActiveChat={setActiveChat}
+                                            sendMessage={sendMessage}
+                                            profileData={profileData}
+                                            setPendingChat={setPendingChat}
+                                            setMessageHistory={setMessageHistory}
+                                            sendJsonMessage={sendJsonMessage}
+                                            pendingChat={pendingChat}
+                                            setScrollPosition={setScrollPosition}
+                                            scrollPosition={scrollPosition}
+                                        />
                                     }
 
                                 })

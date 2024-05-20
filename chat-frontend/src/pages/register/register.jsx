@@ -126,7 +126,7 @@ const Registration = () => {
                                         LastnameResult={LastnameResult}
                                         />
                                         <div id="registrationBox">
-                                            <h2>Registration</h2>
+                                            <h2>Sign Up</h2>
                                         </div>
                                         <NameInput
                                             FirstnameResult={FirstnameResult}

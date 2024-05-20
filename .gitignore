@@ -538,4 +538,5 @@ psd
 thumb
 sketch
 
+./database
 # End of https://www.toptal.com/developers/gitignore/api/csharp,react,aspnetcore

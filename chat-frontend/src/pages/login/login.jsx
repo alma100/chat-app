@@ -95,7 +95,7 @@ const Login = ({ setProfileData }) => {
                         className="registrationInput"
                         type="text"
                         onChange={(e) => { emailHandler(e); }}
-                        placeholder="Username or Emails">
+                        placeholder="Username or Email">
                     </input>
                 </div>
                 <div id="loginPassContainer">
