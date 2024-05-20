@@ -36,9 +36,12 @@ const Chat = ({ profileData, setProfileData }) => {
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
     const [bottomRefe, setBottomRef] = useState([])
-    const [scrollPosition, setScrollPosition] = useState(0);
+    const [scrollPosition, setScrollPosition] = useState([]);
+    const [scrollRefe, setScrollRef] = useState([]);
 
     const bottomRef = useRef(null);
+
+    const scrollRef = useRef(null);
 
     const WS_URL = "ws://localhost:5102/ws";
 
@@ -120,30 +123,11 @@ const Chat = ({ profileData, setProfileData }) => {
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
                 if (activeChat.length !== 0) {
-                    //handleBottomReference()
-                    console.log(bottomRefe)
-
-                    setTimeout(() => {
-
-
-                        console.log("EZAZ")
-                        console.log(messageObject.Message.ChatId)
-
-                        let index = -1;
-
-                        activeChat.forEach((id, i) => {
-                            if (id === messageObject.Message.ChatId) {
-                                index = i
-                            }
-                        })
-
-                        console.log(index)
-                        console.log(bottomRefe)
-
-                        bottomRefe[index].scrollIntoView({ behavior: "smooth" });
-
-
-                    }, 100);
+                    if (isScrolledChat(messageObject.Message.ChatId)) {
+                        scrollBottom(messageObject.Message.ChatId)
+                    } else {
+                        //set visible autoscroll button
+                    }
                 }
             }
         }
@@ -151,56 +135,110 @@ const Chat = ({ profileData, setProfileData }) => {
 
 
     useEffect(() => {
-        if (activeChat.length > 0) {
-            console.log(activeChat)
-            console.log(bottomRef.current)
-            handleBottomReference()
-            
-        } else if (activeChat.length === 0 && bottomRefe !== 0) {
-            handleBottomReference()
+        if (activeChat.length > 0 || (activeChat.length === 0 && bottomRefe !== 0)) {
+            handleBottomReference();
         }
     }, [activeChat])
 
-    useEffect(() => {
-        if(bottomRefe.length >0){
-            /*let index = -1;
+
+    const isScrolledChat = (currentChatId) => {
+
+        let isScrolled = scrollPosition.filter(obj => obj.chatId === currentChatId);
+
+        if (isScrolled.length === 0 || isScrolled[0].position === true) {
+            return true;
+        }
+
+        return false;
+    }
+
+    const scrollBottom = (currentChatId) => {
+        setTimeout(() => {
+
+            let index = -1;
 
             activeChat.forEach((id, i) => {
-                if (id === messageObject.Message.ChatId) {
+                if (id === currentChatId) {
                     index = i
                 }
             })
 
-            console.log(index)
-            console.log(bottomRefe)*/
-
-            //bottomRefe[index].scrollIntoView({ behavior: "smooth" });
-        
-        }
-        console.log(bottomRefe)
-    }, [bottomRefe])
+            console.log(bottomRefe)
+            bottomRefe[index].scrollIntoView({ behavior: "smooth" });
+        }, 100);
+    }
 
     const handleBottomReference = () => {
 
         if (bottomRefe.length < activeChat.length) {
-            console.log(activeChat[activeChat.length - 1])
 
-            console.log(bottomRef.current)
-            setBottomRef([...bottomRefe, bottomRef.current])
-            bottomRef.current.scrollIntoView({ behavior: "smooth" });
+
+            let currentChatId = activeChat[activeChat.length - 1]
+
+            setScrollRef([...scrollRefe, scrollRef.current])
+            setBottomRef([...bottomRefe, bottomRef.current]);
+
+            if (isScrolledChat(currentChatId)) {
+                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+            } else {
+                let index = -1;
+
+                scrollPosition.forEach((obj, i) => {
+                    if (obj.chatId === currentChatId) {
+                        index = i
+                    }
+                })
+
+                scrollRef.current.scrollTop = scrollPosition[index].position;
+            }
+
         } else if (bottomRefe.length > activeChat.length) {
-            console.log(`törlés: ${bottomRefe[0]}`)
-            let upgradeBottomRef = bottomRefe.slice(0, -1)
-            setBottomRef(upgradeBottomRef)
-        }else {
-            bottomRefe.forEach(ref => {
-                ref.scrollIntoView({ behavior: "smooth" });
+            let upgradeBottomRef = bottomRefe.slice(0, -1);
+            let upgradeScrollRef = scrollRefe.slice(0, -1);
+            setScrollRef(upgradeScrollRef);
+            setBottomRef(upgradeBottomRef);
+
+            activeChat.forEach((chatId, slotIndex) => {
+
+                let isScrolled = false;
+                let index = 0
+                scrollPosition.forEach((scrollObj, i) => {
+                    if (chatId === scrollObj.chatId) {
+                        isScrolled = true;
+                        index = i
+                    }
+                })
+
+                if (isScrolled && scrollPosition[index].position !== true) {
+                    upgradeScrollRef[slotIndex].scrollTop = scrollPosition[index].position;
+                } else {
+                    upgradeBottomRef[slotIndex].scrollIntoView();
+                }
+
             })
-            console.log(bottomRef.current)
-            console.log(bottomRefe)
-            console.log("buuugggg")
+
+        } else {
+            activeChat.forEach((chatId, slotIndex) => {
+                let isScrolled = false;
+                let index = 0
+                scrollPosition.forEach((scrollObj, i) => {
+                    if (chatId === scrollObj.chatId) {
+                        isScrolled = true;
+                        index = i
+                    }
+                })
+
+
+                if (isScrolled && scrollPosition[index].position !== true) {
+                    scrollRefe[slotIndex].scrollTop = scrollPosition[index].position;
+                } else {
+                    bottomRefe[slotIndex].scrollIntoView();
+                }
+            })
+
         }
     }
+
 
     const handleIncomingMessage = (messageObj, event) => {
 
@@ -385,8 +423,8 @@ const Chat = ({ profileData, setProfileData }) => {
         setShowCloseIcon(null);
     }
 
-    
-    
+
+
 
     // --------------- Warning methods ----------------------
 
@@ -526,6 +564,7 @@ const Chat = ({ profileData, setProfileData }) => {
                                             pendingChat={pendingChat}
                                             setScrollPosition={setScrollPosition}
                                             scrollPosition={scrollPosition}
+                                            scrollRef={scrollRef}
                                         />
                                     }
 

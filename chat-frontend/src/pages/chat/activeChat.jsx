@@ -11,7 +11,7 @@ import DisplayEmoji from "./displayEmoji";
 const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessage, REACTIONS, setClickEmojiPicker,
     onFocusMessage, clickEmojiPicker, bottomRef, messageInput, setMessageInput, activeChat, setActiveChat,
     sendMessage, profileData, setPendingChat, setMessageHistory, sendJsonMessage, pendingChat, setScrollPosition,
-    scrollPosition
+    scrollPosition, scrollRef
 
 }) => {
 
@@ -52,9 +52,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
         const updatedMessages = { ...messageInput };
 
-        let res = splitMessageText(message)
-        console.log(res)
-        updatedMessages[chatId] = res;
+        updatedMessages[chatId] = message;
         setMessageInput(updatedMessages);
     }
 
@@ -65,40 +63,38 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
     }
 
 
-    const splitMessageText = (messageContent) => {
-        console.log(messageContent)
-        let charCounter = 0;
-        let splitedMessageContent = "";
+    
 
-        for (let i = 0; i < messageContent.length; i++) {
-            if (messageContent[i] !== " ") {
-                charCounter++;
-                if (charCounter > 13) {
-                    splitedMessageContent += '\n';
-                    charCounter = 0;
-                }
-                splitedMessageContent += messageContent[i];
-            } else {
-                charCounter = 0;
-                splitedMessageContent += messageContent[i];
-            }
-
-        }
-        return splitedMessageContent
-    }
-
-    const handleScroll = (event) => {
+    const handleScroll = (event, chatId) => {
 
         const { scrollTop, scrollHeight, clientHeight } = event.target;
 
-        setScrollPosition(event.target.scrollTop);
-        console.log(event.target.scrollTop)
+        let currentPosition = true;
 
         if (scrollTop + clientHeight >= scrollHeight) {
-            console.log(true)
+            currentPosition = true;  
         } else {
-            console.log(false)
+            currentPosition = event.target.scrollTop
         }
+
+        const Obj = {
+            chatId: chatId,
+            position: currentPosition
+        }
+
+        const upgradedScrollPosition = [...scrollPosition];
+
+        let chatIdInScrollPosition = upgradedScrollPosition.filter(obj => obj.chatId !== chatId);
+
+        if(chatIdInScrollPosition.length !== scrollPosition){
+            setScrollPosition([...chatIdInScrollPosition, Obj])
+        }else{
+            setScrollPosition([...upgradedScrollPosition, Obj])
+        }
+        //setScrollPosition(event.target.scrollTop);
+        //console.log(event.target.scrollTop)
+
+        
 
     };
 
@@ -127,7 +123,9 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
             </div>
             <div className="chat-box-body">
                 <div className="chat-box-overlay"
-                    onScroll={handleScroll}>
+                    id={index}
+                    ref={scrollRef}
+                    onScroll={(e)=>handleScroll(e, value)}>
                     {
                         messageHistory[value].map((message, index) => {
                             if (message.UserId === profileData.id) {
