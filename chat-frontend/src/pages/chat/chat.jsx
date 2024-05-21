@@ -103,6 +103,8 @@ const Chat = ({ profileData, setProfileData }) => {
                     console.log(res);
                     setAllChatData(res);
                 });
+
+                handlePrevMessage();
             }
         } else {
             refreshProfilData().then(res => {
@@ -140,6 +142,24 @@ const Chat = ({ profileData, setProfileData }) => {
         }
     }, [activeChat])
 
+   
+    const handlePrevMessage = async () => {
+
+        var res = await getAllMessage();
+
+        let upgradeMessageHistory = {...messageHistory}
+
+        Object.entries(res).forEach(chatKeyValue =>{
+            
+            let chatId = chatKeyValue[0];        
+            let chatMessage = chatKeyValue[1]
+            upgradeMessageHistory[chatId] = chatMessage;
+            
+        })
+
+        setMessageHistory(upgradeMessageHistory);
+
+    }
 
     const isScrolledChat = (currentChatId) => {
 
@@ -294,6 +314,12 @@ const Chat = ({ profileData, setProfileData }) => {
         }
     }
 
+    const getAllMessage = async () => {
+        const res = await fetch("/ws/Message/GetAllChatMessage");
+
+        return res.json();
+    }
+
     const refreshProfilData = () => {
         return fetch('/api/Auth/HowAmI').then(res => {
             if (res.status === 200) {
@@ -304,28 +330,26 @@ const Chat = ({ profileData, setProfileData }) => {
         });
     }
 
-    const searchFetch = (name) => {
-        return fetch("/api/Chat/getUserByName", {
+    const searchFetch = async (name) => {
+        const res = await fetch("/api/Chat/getUserByName", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(name),
-        }).then(
-            res => res.json()
-        )
+        });
+        return await res.json();
     }
 
-    const createChatFetch = (data) => {
-        return fetch("/api/Chat/creatChat", {
+    const createChatFetch = async (data) => {
+        const res = await fetch("/api/Chat/creatChat", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
-        }).then(
-            res => res.json()
-        )
+        });
+        return await res.json();
     }
 
     const getAllChatFetch = () => {

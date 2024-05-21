@@ -9,7 +9,7 @@ namespace chat_WebSockets_server.WebSocketController;
 public class WebSocketController : ControllerBase
 {
     private IChatService _chatService;
-
+    
     public WebSocketController(IChatService chatService)
     {
         _chatService = chatService;

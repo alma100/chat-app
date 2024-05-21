@@ -7,4 +7,6 @@ public interface IMessageRepository
     Task<Message> AddMessage(Message message);
 
     Task<Message> UpdateMessageEmoji(Message message);
+
+    Dictionary<int, List<Message>> GetMessageByUser(string userId);
 }

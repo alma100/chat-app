@@ -36,4 +36,20 @@ public class MessageRepository : IMessageRepository
         Console.WriteLine(oldMessageObj.Emoji.Count);
         return oldMessageObj;
     }
+
+    public Dictionary<int, List<Message>> GetMessageByUser(string userId)
+    {
+        var currentUser = _chatContext.Users.FirstOrDefault(u => u.Id == userId);
+        var messagesByChatId = _chatContext.Chat
+            .Where(c => c.Users.Contains(currentUser))
+            .SelectMany(c => c.Messages) 
+            .Include(m => m.Emoji) 
+            .OrderBy(m => m.CreatedAt) 
+            .ToList() 
+            .GroupBy(m => m.ChatId) 
+            .ToDictionary(g => g.Key, g => g.ToList()); 
+
+        return messagesByChatId;
+
+    }
 }

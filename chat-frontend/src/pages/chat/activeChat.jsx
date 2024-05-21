@@ -20,6 +20,10 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
         setActiveChat(updatedList);
     }
 
+    const splitMessageHistory = () => {
+        
+    }
+
     const sendButtonHandler = (chatId) => {
 
         if (messageInput[chatId] !== "") {
@@ -91,10 +95,6 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
         }else{
             setScrollPosition([...upgradedScrollPosition, Obj])
         }
-        //setScrollPosition(event.target.scrollTop);
-        //console.log(event.target.scrollTop)
-
-        
 
     };
 

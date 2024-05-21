@@ -21,6 +21,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           credentials: true,
         },
+        '/ws': {
+          target: env.BACKEND_URL || 'http://localhost:5102', //http://localhost:5102/ws/Message/GetAllChatMessage
+          changeOrigin: true,
+          credentials: true,
+        },
       },
     },
   };
