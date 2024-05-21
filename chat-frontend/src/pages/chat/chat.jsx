@@ -34,6 +34,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const [messageHistory, setMessageHistory] = useState({});
     const [messageHistoryIndex, setMessageHistoryIndex] = useState({})
 
+
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
     const [bottomRefe, setBottomRef] = useState([])
@@ -45,6 +46,8 @@ const Chat = ({ profileData, setProfileData }) => {
     const scrollRef = useRef(null);
 
     const WS_URL = "ws://localhost:5102/ws";
+
+    const initialIndex = 10;
 
     const REACTIONS = [
         {
@@ -76,7 +79,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
         share: true,
-        
+
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
     });
@@ -125,6 +128,7 @@ const Chat = ({ profileData, setProfileData }) => {
             console.log(messageObject);
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
+                incrementMessageHistoryIndex(messageObject.Message.ChatId);
                 if (activeChat.length !== 0) {
                     if (isScrolledChat(messageObject.Message.ChatId)) {
                         scrollBottom(messageObject.Message.ChatId)
@@ -143,19 +147,44 @@ const Chat = ({ profileData, setProfileData }) => {
         }
     }, [activeChat])
 
-   
+    const incrementMessageHistoryIndex = (chatId) => {
+        let updatedSplitedMessage = { ...messageHistoryIndex };
+
+        if (chatId in messageHistoryIndex && messageHistoryIndex[chatId] !== 0) {
+            let newIndex = updatedSplitedMessage[chatId] +1;
+
+            updatedSplitedMessage[chatId] = newIndex;
+            setMessageHistoryIndex(updatedSplitedMessage);
+        }
+    }
+
+    const creatDefaultMessHistoryValue = (currentIndex) => {
+
+        let updatedSplitedMessage = { ...messageHistoryIndex };
+
+        if (!(currentIndex in messageHistoryIndex)) {
+
+            updatedSplitedMessage[currentIndex] = initialIndex
+            setMessageHistoryIndex(updatedSplitedMessage)
+
+        }
+    }
+
+    
+
+
     const handlePrevMessage = async () => {
 
         var res = await getAllMessage();
 
-        let upgradeMessageHistory = {...messageHistory}
+        let upgradeMessageHistory = { ...messageHistory }
 
-        Object.entries(res).forEach(chatKeyValue =>{
-            
-            let chatId = chatKeyValue[0];        
+        Object.entries(res).forEach(chatKeyValue => {
+
+            let chatId = chatKeyValue[0];
             let chatMessage = chatKeyValue[1]
             upgradeMessageHistory[chatId] = chatMessage;
-            
+
         })
 
         setMessageHistory(upgradeMessageHistory);
@@ -200,7 +229,7 @@ const Chat = ({ profileData, setProfileData }) => {
             setBottomRef([...bottomRefe, bottomRef.current]);
 
             if (isScrolledChat(currentChatId)) {
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current.scrollIntoView();
             } else {
                 let index = -1;
 
@@ -412,6 +441,8 @@ const Chat = ({ profileData, setProfileData }) => {
 
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
             messageBackToOnline(chatDto.id);
+            creatDefaultMessHistoryValue(chatDto.id)
+            
         } else if (!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)) {
             const updatedPendingList = pendingChat.filter(number => number !== chatDto.id);
             setPendingChat(updatedPendingList)
@@ -422,7 +453,8 @@ const Chat = ({ profileData, setProfileData }) => {
     //-------------- onlineChat methods --------------
 
     const messageBackToOnline = (chatId) => {
-        console.log(chatId);
+        console.log("belépett");
+        console.log(scrollPosition)
         let currentActiveChat = [...activeChat];
         let upgradedPedingChat = pendingChat.filter(id => id !== chatId);
 
@@ -431,12 +463,14 @@ const Chat = ({ profileData, setProfileData }) => {
             let newOnlineChat = currentActiveChat.slice(1);
             newOnlineChat.push(chatId);
             setActiveChat(newOnlineChat);
-
+            
             upgradedPedingChat.push(firstChatId)
         } else {
 
             setActiveChat([...currentActiveChat, chatId])
+            
         }
+        
         setPendingChat(upgradedPedingChat);
         setShowCloseIcon(null);
     }
@@ -590,6 +624,9 @@ const Chat = ({ profileData, setProfileData }) => {
                                             setScrollPosition={setScrollPosition}
                                             scrollPosition={scrollPosition}
                                             scrollRef={scrollRef}
+                                            setMessageHistoryIndex={setMessageHistoryIndex}
+                                            messageHistoryIndex={messageHistoryIndex}
+                                            initialIndex={initialIndex}
                                         />
                                     }
 
