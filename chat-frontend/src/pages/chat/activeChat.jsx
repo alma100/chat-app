@@ -20,9 +20,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
         setActiveChat(updatedList);
     }
 
-    const splitMessageHistory = () => {
-        
-    }
+    
 
     const sendButtonHandler = (chatId) => {
 

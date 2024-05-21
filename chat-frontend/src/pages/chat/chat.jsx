@@ -32,6 +32,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const [currentChatId, setcurrentChatId] = useState(null);
     const [messageInput, setMessageInput] = useState({});
     const [messageHistory, setMessageHistory] = useState({});
+    const [messageHistoryIndex, setMessageHistoryIndex] = useState({})
 
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
