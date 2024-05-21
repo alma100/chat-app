@@ -32,6 +32,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const [currentChatId, setcurrentChatId] = useState(null);
     const [messageInput, setMessageInput] = useState({});
     const [messageHistory, setMessageHistory] = useState({});
+    const [messageHistoryIndex, setMessageHistoryIndex] = useState({})
 
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
@@ -75,7 +76,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
         share: true,
-        //Will attempt to reconnect on all close events, such as server shutting down
+        
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
     });
