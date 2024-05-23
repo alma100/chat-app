@@ -33,7 +33,6 @@ const DisplayEmoji = ({ emojiValue, reactions }) => {
         let res = await getUserFetch(emojiValue.UserId);
         let usersFullName = res.firstName + " " + res.lastName;
         setUserName(usersFullName);
-        console.log(res)
     }
     return (
         <Tooltip title={userName !== null ? userName : "loading..."} placement="top"

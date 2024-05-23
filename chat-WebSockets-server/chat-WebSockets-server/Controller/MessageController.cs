@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using chat_WebSockets_server.Repository;
 using Microsoft.AspNetCore.Authorization;
@@ -12,30 +13,57 @@ public class MessageController : ControllerBase
 {
 
     private IMessageRepository _messageRepository;
+    
+    private IConfiguration _configuration;
+    
 
-    public MessageController(IMessageRepository messageRepository)
+    public MessageController(IMessageRepository messageRepository, IConfiguration configuration)
     {
         _messageRepository = messageRepository;
+        _configuration = configuration;
     }
 
 
     [HttpGet("GetAllChatMessage")]
-    [Authorize(Roles = "user")]
+    //[Authorize(Roles = "user")]
     public ActionResult GetAllChatMessage()
     {
         var httpContext = HttpContext;
         string jwtToken = httpContext.Request.Cookies["access_token"];
         var userId = GetUserIdByJwTtoken(jwtToken);
 
-        var res = _messageRepository.GetMessageByUser(userId);
+        var currentIndex = updateCurrentMessageIndex(0);
+        
+        var res = _messageRepository.GetMessageByUser(userId, currentIndex);
 
         return Ok(res);
     }
     
-    [HttpGet("GetChatMessage/{chatId}")]
-    public ActionResult GetChatMessage()
+    [HttpGet("GetChatMessage/{chatId}/{index}")]
+    public ActionResult GetChatMessage(int chatId, int index)
     {
-        return Ok();
+        Console.WriteLine(chatId);
+        var currentIndex = 0;
+        
+        if (index == 0 )
+        {
+            currentIndex = updateCurrentMessageIndex(0);
+        }
+        else
+        {
+            currentIndex = updateCurrentMessageIndex(index);
+        }
+        
+        Console.WriteLine(currentIndex);
+        var res = _messageRepository.GetMessageByChatId(chatId, currentIndex);
+
+        /*var resObj = new
+        {
+            nextIndex = currentIndex,
+            result = res
+        };*/
+        
+        return Ok(res);
     }
     
     
@@ -58,5 +86,19 @@ public class MessageController : ControllerBase
         }
 
         return userId;
+    }
+
+    private int updateCurrentMessageIndex(int index)
+    {
+        var initialIndex = Int32.Parse(_configuration["MessageIndex:InitialIndex"]);
+        
+        if (index == 0)
+        {
+            return initialIndex;
+        }
+
+        var newIndex = index + initialIndex;
+        
+        return newIndex;
     }
 }

@@ -29,7 +29,6 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const [allChatData, setAllChatData] = useState([]);
 
-    const [currentChatId, setcurrentChatId] = useState(null);
     const [messageInput, setMessageInput] = useState({});
     const [messageHistory, setMessageHistory] = useState({});
     const [messageHistoryIndex, setMessageHistoryIndex] = useState({})
@@ -108,7 +107,7 @@ const Chat = ({ profileData, setProfileData }) => {
                     setAllChatData(res);
                 });
 
-                handlePrevMessage();
+                //handlePrevMessage();
             }
         } else {
             refreshProfilData().then(res => {
@@ -151,7 +150,7 @@ const Chat = ({ profileData, setProfileData }) => {
         let updatedSplitedMessage = { ...messageHistoryIndex };
 
         if (chatId in messageHistoryIndex && messageHistoryIndex[chatId] !== 0) {
-            let newIndex = updatedSplitedMessage[chatId] +1;
+            let newIndex = updatedSplitedMessage[chatId] + 1;
 
             updatedSplitedMessage[chatId] = newIndex;
             setMessageHistoryIndex(updatedSplitedMessage);
@@ -160,22 +159,25 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const creatDefaultMessHistoryValue = (currentIndex) => {
 
+        console.log("default index creat")
+
         let updatedSplitedMessage = { ...messageHistoryIndex };
 
         if (!(currentIndex in messageHistoryIndex)) {
 
             updatedSplitedMessage[currentIndex] = initialIndex
+            console.log(updatedSplitedMessage[currentIndex])
             setMessageHistoryIndex(updatedSplitedMessage)
 
         }
     }
 
-    
 
 
-    const handlePrevMessage = async () => {
 
-        var res = await getAllMessage();
+    const handlePrevMessage = async (chatId) => {
+
+        /*var res = await getAllMessage();
 
         let upgradeMessageHistory = { ...messageHistory }
 
@@ -187,7 +189,34 @@ const Chat = ({ profileData, setProfileData }) => {
 
         })
 
-        setMessageHistory(upgradeMessageHistory);
+        setMessageHistory(upgradeMessageHistory);*/
+
+        let nextIndex = 0;
+        console.log(messageHistoryIndex[chatId])
+
+        if (messageHistory[chatId] !== undefined) {
+            let messageInChat = "";
+
+            nextIndex = messageHistory[chatId].length;
+            let updatedMessageHistory = { ...messageHistory };
+
+            messageInChat = await getCurrentChatMessage(chatId, nextIndex);
+
+            let oldList = updatedMessageHistory[chatId]
+            console.log(oldList)
+            console.log(messageInChat[chatId])
+            let newList = messageInChat[chatId].concat(oldList)
+            console.log(newList)
+
+            updatedMessageHistory[chatId] = newList;
+
+            setMessageHistory(
+                updatedMessageHistory
+            )
+
+            console.log(messageHistoryIndex[chatId])
+        }
+    
 
     }
 
@@ -350,6 +379,13 @@ const Chat = ({ profileData, setProfileData }) => {
         return res.json();
     }
 
+    const getCurrentChatMessage = async (chatid, nextIndex) => {
+        const res = await fetch(`/ws/Message/GetChatMessage/${chatid}/${nextIndex}`);
+
+        return res.json();
+
+    }
+
     const refreshProfilData = () => {
         return fetch('/api/Auth/HowAmI').then(res => {
             if (res.status === 200) {
@@ -414,7 +450,6 @@ const Chat = ({ profileData, setProfileData }) => {
             res => {
                 console.log(res)
                 if (res.status !== 400) {
-                    setcurrentChatId(res.id);
                     setMessageHistory({
                         ...messageHistory,
                         [res.id]: []
@@ -442,7 +477,7 @@ const Chat = ({ profileData, setProfileData }) => {
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
             messageBackToOnline(chatDto.id);
             creatDefaultMessHistoryValue(chatDto.id)
-            
+
         } else if (!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)) {
             const updatedPendingList = pendingChat.filter(number => number !== chatDto.id);
             setPendingChat(updatedPendingList)
@@ -452,25 +487,45 @@ const Chat = ({ profileData, setProfileData }) => {
     }
     //-------------- onlineChat methods --------------
 
-    const messageBackToOnline = (chatId) => {
+    const messageBackToOnline = async (chatId) => {
         console.log("belépett");
         console.log(scrollPosition)
         let currentActiveChat = [...activeChat];
         let upgradedPedingChat = pendingChat.filter(id => id !== chatId);
+
+        let messageInChat = "";
+            if (messageHistory[chatId] === undefined) {
+                let updatedMessageHistory = { ...messageHistory };
+
+                messageInChat = await getCurrentChatMessage(chatId, 0);
+
+                updatedMessageHistory[chatId] = messageInChat[chatId];
+
+                setMessageHistory(
+                    updatedMessageHistory
+                )
+            }
 
         if (currentActiveChat.length >= 3) {
             let firstChatId = currentActiveChat[0];
             let newOnlineChat = currentActiveChat.slice(1);
             newOnlineChat.push(chatId);
             setActiveChat(newOnlineChat);
-            
+
             upgradedPedingChat.push(firstChatId)
+
         } else {
+            /*let nextIndex = 0;
+
+            if (messageHistory[chatId] !== undefined){
+                nextIndex = messageHistory[chatId].length;
+            }*/
+            
 
             setActiveChat([...currentActiveChat, chatId])
-            
+
         }
-        
+
         setPendingChat(upgradedPedingChat);
         setShowCloseIcon(null);
     }
@@ -627,6 +682,7 @@ const Chat = ({ profileData, setProfileData }) => {
                                             setMessageHistoryIndex={setMessageHistoryIndex}
                                             messageHistoryIndex={messageHistoryIndex}
                                             initialIndex={initialIndex}
+                                            handlePrevMessage={handlePrevMessage}
                                         />
                                     }
 

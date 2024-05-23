@@ -3,7 +3,7 @@ import Close from "../../icons/close.png"
 import User from "../../icons/user.png"
 import Happiness from "../../icons/happiness.png"
 import Submit from "../../icons/submit.png"
-
+import { useEffect, useState, useRef } from "react";
 
 import Emoji from "./emoji";
 import DisplayEmoji from "./displayEmoji";
@@ -11,22 +11,21 @@ import DisplayEmoji from "./displayEmoji";
 const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessage, REACTIONS, setClickEmojiPicker,
     onFocusMessage, clickEmojiPicker, bottomRef, messageInput, setMessageInput, activeChat, setActiveChat,
     sendMessage, profileData, setPendingChat, setMessageHistory, sendJsonMessage, pendingChat, setScrollPosition,
-    scrollPosition, scrollRef, setMessageHistoryIndex, messageHistoryIndex, initialIndex
+    scrollPosition, scrollRef, setMessageHistoryIndex, messageHistoryIndex, initialIndex, handlePrevMessage
 
 }) => {
-
 
     const closeChatBox = (id) => {
         const updatedList = activeChat.filter(number => number !== id);
         setActiveChat(updatedList);
-        
+
         const updatedSplitedMessage = { ...messageHistoryIndex }
         delete updatedSplitedMessage[id];
         setMessageHistoryIndex(updatedSplitedMessage);
 
         const updateScrollPosition = scrollPosition.filter(obj => obj.chatId !== id);
         setScrollPosition(updateScrollPosition)
-        
+
     }
 
     const sendButtonHandler = (chatId) => {
@@ -72,7 +71,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
     }
 
-    const splitMessageHistory = (currentIndex) => {
+    const splitMessageHistory = async (currentIndex) => {
 
         let updatedSplitedMessage = { ...messageHistoryIndex };
 
@@ -81,10 +80,24 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
             console.log(updatedSplitedMessage[currentIndex])
 
-            let newIndex = updatedSplitedMessage[currentIndex] + initialIndex;
 
-            updatedSplitedMessage[currentIndex] = newIndex;
-            setMessageHistoryIndex(updatedSplitedMessage);
+
+            if (updatedSplitedMessage[currentIndex] < messageHistory[currentIndex].length) {
+                let newIndex = updatedSplitedMessage[currentIndex] + initialIndex;
+
+                updatedSplitedMessage[currentIndex] = newIndex;
+                setMessageHistoryIndex(updatedSplitedMessage);
+
+                console.log(newIndex)
+                console.log(messageHistory[currentIndex].length)
+            }
+
+            if (messageHistoryIndex[value] === messageHistory[value].length) {
+                console.log("kel az update")
+                await handlePrevMessage(value);
+                
+
+            }
 
         }
     }
@@ -93,6 +106,8 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
 
     const handleScroll = (event, chatId) => {
+
+        
 
         const { scrollTop, scrollHeight, clientHeight } = event.target;
 
@@ -103,10 +118,13 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
         } else {
             currentPosition = event.target.scrollTop
             if (currentPosition <= 50) {
-                splitMessageHistory(chatId)
+                splitMessageHistory(chatId);
+
             }
+
         }
-        
+
+
         const Obj = {
             chatId: chatId,
             position: currentPosition
@@ -115,14 +133,12 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
         const upgradedScrollPosition = [...scrollPosition];
 
         let chatIdInScrollPosition = upgradedScrollPosition.filter(obj => obj.chatId !== chatId);
-        console.log(scrollPosition)
+
         if (chatIdInScrollPosition.length !== scrollPosition) {
-            console.log("ment1")
-            console.log(Obj)
-            console.log(chatIdInScrollPosition)
+
             setScrollPosition([...chatIdInScrollPosition, Obj])
         } else {
-            console.log("ment2")
+
             setScrollPosition([...upgradedScrollPosition, Obj])
         }
 
