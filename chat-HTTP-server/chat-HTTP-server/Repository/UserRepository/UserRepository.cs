@@ -23,44 +23,37 @@ public class UserRepository : IUserRepository
         return _chatContext.Users.Where(u => u.Email == email).ToList().Count < 1;
     }
 
-    public List<User> GetUserByName(string name, string id)
+    public async Task<List<User>> GetUserByName(string name, string id)  //egyszer lekérni, tartalmazza-e a család és vezetékneve + id nem egyezik majd azt rendezni.
     {
-        Console.WriteLine(name);
         var splittedString = name.Split(" ", 2).ToList();
-        /*Console.WriteLine(splittedString[0]);
-        Console.WriteLine(splittedString[1]);*/
+        
         var users = new List<User>();
 
         if (splittedString.Count == 1)
         {
-            users = _chatContext.Users.Where(x => x.FirstName.Contains(name) && x.Id != id).ToList();
-            users.AddRange(_chatContext.Users.Where(x => x.LastName.Contains(name) && !x.FirstName.Contains(name) && x.Id != id).ToList());
+            users = await _chatContext.Users.Where(x => x.FirstName.Contains(name) && x.Id != id).ToListAsync();
+            users.AddRange( await _chatContext.Users.Where(x => x.LastName.Contains(name) && !x.FirstName.Contains(name) && x.Id != id).ToListAsync());
         }
         else
         {
             var lastName = splittedString[1];
             Console.WriteLine(lastName);
 
-            users.AddRange(_chatContext.Users.Where(x => x.FirstName == splittedString[0] && x.LastName == lastName && x.Id != id).ToList());
-            users.AddRange(_chatContext.Users.Where(x => x.FirstName == splittedString[0] &&
+            users.AddRange(await _chatContext.Users.Where(x => x.FirstName == splittedString[0] && x.LastName == lastName && x.Id != id).ToListAsync());
+            users.AddRange(await _chatContext.Users.Where(x => x.FirstName == splittedString[0] &&
                                                          x.LastName != lastName && x.LastName.Contains(lastName) &&
-                                                         x.Id != id).ToList());
+                                                         x.Id != id).ToListAsync());
             
         }
 
         return users;
     }
 
-    public List<User> GetUserById(List<string> ids)
+    public async Task<List<User>> GetUserById(List<string> ids)
     {
-        var res = new List<User>();
-        
-        foreach (var id in ids)
-        { 
-            res.AddRange(_chatContext.Users.Where(x => x.Id == id).ToList());
-        } 
-
-        return res;
+        return await _chatContext.Users
+            .Where(x => ids.Contains(x.Id))
+            .ToListAsync();
     }
     
     public async Task<User> GetUserById(string id)
@@ -71,10 +64,10 @@ public class UserRepository : IUserRepository
         return res;
     }
     
-    public List<ChatDto> GetAllChatByUserId(string id)
+    public async Task<List<ChatDto>> GetAllChatByUserId(string id)
     {
         
-        var userChats = _chatContext.Chat.Include(c => c.Users).Where(x => x.Users.Any(u => u.Id == id)).ToList();
+        var userChats = await _chatContext.Chat.Include(c => c.Users).Where(x => x.Users.Any(u => u.Id == id)).ToListAsync();
 
         var result = new List<ChatDto>();
 

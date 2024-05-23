@@ -26,11 +26,9 @@ public class ChatController : ControllerBase
 
     [HttpPost("getUserByName")]
     [Authorize(Roles = "user")]
-    public IActionResult GetUserByName(SearchRequest searchRequest)
+    public async Task<ActionResult> GetUserByName(SearchRequest searchRequest)
     {
-        var httpContext = HttpContext;
-        
-        string jwtToken = httpContext.Request.Cookies["access_token"];
+        string jwtToken = HttpContext.Request.Cookies["access_token"];
 
         if (jwtToken == null)
         {
@@ -39,7 +37,7 @@ public class ChatController : ControllerBase
 
         var userId = GetUserIdByJwTtoken(jwtToken);
         
-        var result = _userRepository.GetUserByName(searchRequest.name, userId);
+        var result = await _userRepository.GetUserByName(searchRequest.name, userId);
         var userDtos = result.Select(u => new UserDto {
             Id = u.Id,
             FirstName = u.FirstName,
@@ -69,15 +67,14 @@ public class ChatController : ControllerBase
     [Authorize(Roles = "user")]
     public async Task<IActionResult> CreateChat(CreateChatRequest request)
     {
-        var users = _userRepository.GetUserById(request.Usersid);
+        var users = await _userRepository.GetUserById(request.Usersid);
         Chat newChat = new Chat
         {
             Messages = new List<Message>(),
             Users = users
         };
         
-        var httpContext = HttpContext;
-        string jwtToken = httpContext.Request.Cookies["access_token"];
+        string jwtToken = HttpContext.Request.Cookies["access_token"];
         var userId = GetUserIdByJwTtoken(jwtToken);
 
         var userFullname = users.Where(u => u.Id != userId).Select(u => u.FirstName + " " + u.LastName).ToList();
@@ -96,14 +93,12 @@ public class ChatController : ControllerBase
 
     [HttpGet("getAllChat")]
     [Authorize(Roles = "user")]
-    public IActionResult GetAllChat()
+    public async Task<ActionResult> GetAllChat()
     {
-        var httpContext = HttpContext;
-        string jwtToken = httpContext.Request.Cookies["access_token"];
+        string jwtToken = HttpContext.Request.Cookies["access_token"];
         var userId = GetUserIdByJwTtoken(jwtToken);
-        Console.WriteLine(userId);
 
-        var res = _userRepository.GetAllChatByUserId(userId);
+        var res = await _userRepository.GetAllChatByUserId(userId);
         
         return Ok(res);
     }
@@ -112,8 +107,7 @@ public class ChatController : ControllerBase
     {
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(jwtToken);
-
-        // A claim-ek kiolvasása a JWT tokenből
+        
         var claims = token.Claims.ToList();
 
         var userId = "";

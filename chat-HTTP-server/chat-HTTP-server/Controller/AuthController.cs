@@ -1,13 +1,9 @@
 ﻿
 using System.Security.Claims;
-using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
 using chat_HTTP_server.Service.AuthModel;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace chat_HTTP_server.Controller;
 
@@ -35,6 +31,7 @@ public class AuthController : ControllerBase
         try
         {
             var authResult = await _authService.LoginAsync(request.name, request.password);
+            
             if (authResult.Success)
             {
                 

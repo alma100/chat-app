@@ -153,9 +153,12 @@ void AddAuthentication()
     builder.Services
         .AddAuthentication(options =>
         {
-            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultAuthenticateScheme =
+                options.DefaultChallengeScheme =
+                    options.DefaultForbidScheme =
+                        options.DefaultScheme =
+                            options.DefaultSignInScheme =
+                                options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
         })
         .AddJwtBearer(options =>
         {
@@ -182,13 +185,6 @@ void AddAuthentication()
                 }
             };
 
-        })
-        .AddCookie("Identity.Application", options =>
-        {
-
-            options.Cookie.Name = "YourAuthCookieName"; 
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(30); 
-    
         })
         .AddGoogle(googleOptions =>
         {

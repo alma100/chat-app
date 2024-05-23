@@ -48,8 +48,7 @@ public class AuthService : IAuthService
 
         var validInput = managedUserByEmail != null ? managedUserByEmail : managedUserByUserName;
         
-        var test = await _singInManager.PasswordSignInAsync(validInput, password, isPersistent: false, lockoutOnFailure: true);
-        //var test = await  _userManager.CheckPasswordAsync(validInput, password);
+        var test = await _singInManager.CheckPasswordSignInAsync(validInput, password, lockoutOnFailure: true);
         
         if (!test.Succeeded)
         {

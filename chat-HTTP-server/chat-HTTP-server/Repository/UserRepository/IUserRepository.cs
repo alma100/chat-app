@@ -8,11 +8,11 @@ public interface IUserRepository
 
     bool IsEmailValid(string email);
 
-    List<User> GetUserByName(string name, string id);
+    Task<List<User>> GetUserByName(string name, string id);
 
-    List<User> GetUserById(List<string> id);
+    Task<List<User>> GetUserById(List<string> id);
 
     Task<User> GetUserById(string id);
-    
-    List<ChatDto> GetAllChatByUserId(string id);
+
+    Task<List<ChatDto>> GetAllChatByUserId(string id);
 }
