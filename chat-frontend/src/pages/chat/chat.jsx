@@ -29,10 +29,10 @@ const Chat = ({ profileData, setProfileData }) => {
 
     const [allChatData, setAllChatData] = useState([]);
 
-    const [currentChatId, setcurrentChatId] = useState(null);
     const [messageInput, setMessageInput] = useState({});
     const [messageHistory, setMessageHistory] = useState({});
     const [messageHistoryIndex, setMessageHistoryIndex] = useState({})
+
 
     const [showCloseIcon, setShowCloseIcon] = useState(null);
 
@@ -45,6 +45,8 @@ const Chat = ({ profileData, setProfileData }) => {
     const scrollRef = useRef(null);
 
     const WS_URL = "ws://localhost:5102/ws";
+
+    const initialIndex = 10;
 
     const REACTIONS = [
         {
@@ -76,7 +78,7 @@ const Chat = ({ profileData, setProfileData }) => {
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
         share: true,
-        
+
         shouldReconnect: (closeEvent) => true,
         withCredentials: true,
     });
@@ -105,7 +107,7 @@ const Chat = ({ profileData, setProfileData }) => {
                     setAllChatData(res);
                 });
 
-                handlePrevMessage();
+                //handlePrevMessage();
             }
         } else {
             refreshProfilData().then(res => {
@@ -125,6 +127,7 @@ const Chat = ({ profileData, setProfileData }) => {
             console.log(messageObject);
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
+                incrementMessageHistoryIndex(messageObject.Message.ChatId);
                 if (activeChat.length !== 0) {
                     if (isScrolledChat(messageObject.Message.ChatId)) {
                         scrollBottom(messageObject.Message.ChatId)
@@ -143,22 +146,77 @@ const Chat = ({ profileData, setProfileData }) => {
         }
     }, [activeChat])
 
-   
-    const handlePrevMessage = async () => {
+    const incrementMessageHistoryIndex = (chatId) => {
+        let updatedSplitedMessage = { ...messageHistoryIndex };
 
-        var res = await getAllMessage();
+        if (chatId in messageHistoryIndex && messageHistoryIndex[chatId] !== 0) {
+            let newIndex = updatedSplitedMessage[chatId] + 1;
 
-        let upgradeMessageHistory = {...messageHistory}
+            updatedSplitedMessage[chatId] = newIndex;
+            setMessageHistoryIndex(updatedSplitedMessage);
+        }
+    }
 
-        Object.entries(res).forEach(chatKeyValue =>{
-            
-            let chatId = chatKeyValue[0];        
+    const creatDefaultMessHistoryValue = (currentIndex) => {
+
+        console.log("default index creat")
+
+        let updatedSplitedMessage = { ...messageHistoryIndex };
+
+        if (!(currentIndex in messageHistoryIndex)) {
+
+            updatedSplitedMessage[currentIndex] = initialIndex
+            console.log(updatedSplitedMessage[currentIndex])
+            setMessageHistoryIndex(updatedSplitedMessage)
+
+        }
+    }
+
+
+
+
+    const handlePrevMessage = async (chatId) => {
+
+        /*var res = await getAllMessage();
+
+        let upgradeMessageHistory = { ...messageHistory }
+
+        Object.entries(res).forEach(chatKeyValue => {
+
+            let chatId = chatKeyValue[0];
             let chatMessage = chatKeyValue[1]
             upgradeMessageHistory[chatId] = chatMessage;
-            
+
         })
 
-        setMessageHistory(upgradeMessageHistory);
+        setMessageHistory(upgradeMessageHistory);*/
+
+        let nextIndex = 0;
+        console.log(messageHistoryIndex[chatId])
+
+        if (messageHistory[chatId] !== undefined) {
+            let messageInChat = "";
+
+            nextIndex = messageHistory[chatId].length;
+            let updatedMessageHistory = { ...messageHistory };
+
+            messageInChat = await getCurrentChatMessage(chatId, nextIndex);
+
+            let oldList = updatedMessageHistory[chatId]
+            console.log(oldList)
+            console.log(messageInChat[chatId])
+            let newList = messageInChat[chatId].concat(oldList)
+            console.log(newList)
+
+            updatedMessageHistory[chatId] = newList;
+
+            setMessageHistory(
+                updatedMessageHistory
+            )
+
+            console.log(messageHistoryIndex[chatId])
+        }
+    
 
     }
 
@@ -200,7 +258,7 @@ const Chat = ({ profileData, setProfileData }) => {
             setBottomRef([...bottomRefe, bottomRef.current]);
 
             if (isScrolledChat(currentChatId)) {
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current.scrollIntoView();
             } else {
                 let index = -1;
 
@@ -321,6 +379,13 @@ const Chat = ({ profileData, setProfileData }) => {
         return res.json();
     }
 
+    const getCurrentChatMessage = async (chatid, nextIndex) => {
+        const res = await fetch(`/ws/Message/GetChatMessage/${chatid}/${nextIndex}`);
+
+        return res.json();
+
+    }
+
     const refreshProfilData = () => {
         return fetch('/api/Auth/HowAmI').then(res => {
             if (res.status === 200) {
@@ -385,7 +450,6 @@ const Chat = ({ profileData, setProfileData }) => {
             res => {
                 console.log(res)
                 if (res.status !== 400) {
-                    setcurrentChatId(res.id);
                     setMessageHistory({
                         ...messageHistory,
                         [res.id]: []
@@ -412,6 +476,8 @@ const Chat = ({ profileData, setProfileData }) => {
 
         if (!activeChat.includes(chatDto.id) && !pendingChat.includes(chatDto.id)) {
             messageBackToOnline(chatDto.id);
+            creatDefaultMessHistoryValue(chatDto.id)
+
         } else if (!activeChat.includes(chatDto.id) && pendingChat.includes(chatDto.id)) {
             const updatedPendingList = pendingChat.filter(number => number !== chatDto.id);
             setPendingChat(updatedPendingList)
@@ -421,10 +487,24 @@ const Chat = ({ profileData, setProfileData }) => {
     }
     //-------------- onlineChat methods --------------
 
-    const messageBackToOnline = (chatId) => {
-        console.log(chatId);
+    const messageBackToOnline = async (chatId) => {
+        console.log("belépett");
+        console.log(scrollPosition)
         let currentActiveChat = [...activeChat];
         let upgradedPedingChat = pendingChat.filter(id => id !== chatId);
+
+        let messageInChat = "";
+            if (messageHistory[chatId] === undefined) {
+                let updatedMessageHistory = { ...messageHistory };
+
+                messageInChat = await getCurrentChatMessage(chatId, 0);
+
+                updatedMessageHistory[chatId] = messageInChat[chatId];
+
+                setMessageHistory(
+                    updatedMessageHistory
+                )
+            }
 
         if (currentActiveChat.length >= 3) {
             let firstChatId = currentActiveChat[0];
@@ -433,10 +513,19 @@ const Chat = ({ profileData, setProfileData }) => {
             setActiveChat(newOnlineChat);
 
             upgradedPedingChat.push(firstChatId)
+
         } else {
+            /*let nextIndex = 0;
+
+            if (messageHistory[chatId] !== undefined){
+                nextIndex = messageHistory[chatId].length;
+            }*/
+            
 
             setActiveChat([...currentActiveChat, chatId])
+
         }
+
         setPendingChat(upgradedPedingChat);
         setShowCloseIcon(null);
     }
@@ -590,6 +679,10 @@ const Chat = ({ profileData, setProfileData }) => {
                                             setScrollPosition={setScrollPosition}
                                             scrollPosition={scrollPosition}
                                             scrollRef={scrollRef}
+                                            setMessageHistoryIndex={setMessageHistoryIndex}
+                                            messageHistoryIndex={messageHistoryIndex}
+                                            initialIndex={initialIndex}
+                                            handlePrevMessage={handlePrevMessage}
                                         />
                                     }
 
