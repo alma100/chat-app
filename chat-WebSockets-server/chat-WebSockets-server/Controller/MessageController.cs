@@ -40,7 +40,7 @@ public class MessageController : ControllerBase
     }
     
     [HttpGet("GetChatMessage/{chatId}/{index}")]
-    public ActionResult GetChatMessage(int chatId, int index)
+    public async Task<ActionResult> GetChatMessage(int chatId, int index)
     {
         Console.WriteLine(chatId);
         var currentIndex = 0;
@@ -55,13 +55,7 @@ public class MessageController : ControllerBase
         }
         
         Console.WriteLine(currentIndex);
-        var res = _messageRepository.GetMessageByChatId(chatId, currentIndex);
-
-        /*var resObj = new
-        {
-            nextIndex = currentIndex,
-            result = res
-        };*/
+        var res =await  _messageRepository.GetMessageByChatId(chatId, currentIndex);
         
         return Ok(res);
     }

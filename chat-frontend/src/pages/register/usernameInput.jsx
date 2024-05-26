@@ -1,4 +1,15 @@
-const UsernameInput = ({UsernameResult, Username, setUsernameResult, setUsername, UsernameInfoBox}) => {
+import { useEffect } from "react";
+import useSingIn from "./regHook/useSingIn";
+import { useTestContext } from "../../context/testContext";
+
+const UsernameInput = () => {
+
+    const {Username, setUsernameState, UsernameResult, setUsernameResultValue, setInfoBoxValue, UsernameInfoBox} = useTestContext()
+
+    useEffect(()=>{
+        console.log("lefut")
+        console.log(UsernameResult)
+    },[UsernameResult])
 
     const isUsernameValidFetch = async (username) => {
 
@@ -17,18 +28,18 @@ const UsernameInput = ({UsernameResult, Username, setUsernameResult, setUsername
         if (isUsernameLengthValid(input)) {
             const isUsed = await isUsernameUsed(input);
             if (!isUsed) {
-                setUsername(input);
-                setUsernameResult(true);
+                setUsernameState(input);
+                setUsernameResultValue(true);
             } else {
-                setUsernameResult(false);
+                setUsernameResultValue(false);
             }
         }
     }
 
     const isUsernameLengthValid = (username) => {
-        return username === "" ? setUsernameResult("") :
-            username.length < 5 ? setUsernameResult("short") :
-                username.length > 12 ? setUsernameResult("large") :
+        return username === "" ? setUsernameResultValue("") :
+            username.length < 5 ? setUsernameResultValue("short") :
+                username.length > 12 ? setUsernameResultValue("large") :
                     true;
     }
 
@@ -54,7 +65,7 @@ const UsernameInput = ({UsernameResult, Username, setUsernameResult, setUsername
                     onBlur={(e) => usernameValidator(e)}
                     placeholder="Username"
                     className="registrationInput"
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setUsernameState(e.target.value)}
                     defaultValue={Username !== null ? Username : ""}
                 ></input>
                 {

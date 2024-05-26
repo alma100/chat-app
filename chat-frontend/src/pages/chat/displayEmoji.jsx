@@ -34,6 +34,7 @@ const DisplayEmoji = ({ emojiValue, reactions }) => {
         let usersFullName = res.firstName + " " + res.lastName;
         setUserName(usersFullName);
     }
+    
     return (
         <Tooltip title={userName !== null ? userName : "loading..."} placement="top"
             slotProps={{

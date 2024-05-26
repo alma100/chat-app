@@ -77,38 +77,31 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
         if (currentIndex in messageHistoryIndex) {
 
-
-            console.log(updatedSplitedMessage[currentIndex])
-
-
-
             if (updatedSplitedMessage[currentIndex] < messageHistory[currentIndex].length) {
                 let newIndex = updatedSplitedMessage[currentIndex] + initialIndex;
 
                 updatedSplitedMessage[currentIndex] = newIndex;
                 setMessageHistoryIndex(updatedSplitedMessage);
 
-                console.log(newIndex)
-                console.log(messageHistory[currentIndex].length)
             }
 
             if (messageHistoryIndex[value] === messageHistory[value].length) {
                 console.log("kel az update")
-                await handlePrevMessage(value);
-                
 
+                await handlePrevMessage(value);
             }
 
         }
+
     }
 
 
 
 
-    const handleScroll = (event, chatId) => {
+    const handleScroll = async (event, chatId) => {
 
-        
-
+        console.log(event.target.scrollTop)
+        let histPosition = 0;
         const { scrollTop, scrollHeight, clientHeight } = event.target;
 
         let currentPosition = true;
@@ -117,12 +110,17 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
             currentPosition = true;
         } else {
             currentPosition = event.target.scrollTop
-            if (currentPosition <= 50) {
-                splitMessageHistory(chatId);
+            histPosition = event.target.scrollTop
+            if (currentPosition === 0) {
+
+                await splitMessageHistory(chatId);
+
+                if (currentPosition === 0) event.target.scrollTop = 10;
 
             }
 
         }
+
 
 
         const Obj = {
@@ -211,7 +209,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
                                 } else {
                                     return <div className="chatMessageWrapper"
                                         id={message.ChatId + "." + index}
-                                        onMouseEnter={() => { setOnFocusMessage(message.MessageId), console.log(message.MessageId) }}
+                                        onMouseEnter={() => { setOnFocusMessage(message.MessageId) }}
                                         onMouseLeave={() => { setOnFocusMessage(null), setClickEmojiPicker(null) }}>
                                         <div className="messageContentContainer">
 
@@ -271,11 +269,11 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
                                         </div>
 
                                     </div>
-                                }
+                                } 
                             }
+                            
 
-
-                        })
+                        }) 
                     }
                     <div id={`${index}`} ref={bottomRef} />
                 </div>

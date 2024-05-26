@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom"
 import Eye from "../../icons/eye.png"
 import Hide from "../../icons/hide.png"
 import "./login.css"
+import { UserDataContext, useUserDataContext } from "../../context/userDataContext";
 
 
-const Login = ({ setProfileData }) => {
+const Login = () => {
 
     const navigate = useNavigate();
 
@@ -15,6 +16,7 @@ const Login = ({ setProfileData }) => {
 
     const [passwordVisible, setPasswordVisible] = useState(false);
 
+    const { setProfileData } = useUserDataContext();
 
     const loginRequestFetch = (loginData) => {
         return fetch('/api/Auth/login', {

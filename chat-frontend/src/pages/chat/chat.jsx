@@ -6,13 +6,16 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import "./chat.css"
 
 import Close from "../../icons/close.png"
+import BossHead from "../../icons/GaborEmoji.png"
 
 
 import ActiveChat from "./activeChat";
+import { useUserDataContext } from "../../context/userDataContext";
 
-const Chat = ({ profileData, setProfileData }) => {
+const Chat = () => {
 
     const navigate = useNavigate();
+    const {profileData, setProfileData} = useUserDataContext()
 
     const [searchFieldValue, setSearchFieldValue] = useState(null);
     const [searchFetchRes, setSearchFetchRes] = useState(null);
@@ -62,7 +65,10 @@ const Chat = ({ profileData, setProfileData }) => {
             label: "wow",
         },
         {
-            emoji: "🙌",
+            emoji:  <img style={{
+                width: '20px',
+                height: '20px',
+            }} src={BossHead} alt="Boss head Icon" />,
             label: "yay",
         },
         {
@@ -213,11 +219,14 @@ const Chat = ({ profileData, setProfileData }) => {
             setMessageHistory(
                 updatedMessageHistory
             )
-
-            console.log(messageHistoryIndex[chatId])
+            console.log("---------------------")
+            console.log(messageInChat[chatId].length)
+            let res = messageInChat[chatId].length > 0 ? true : false;
+            console.log(res)
+            return res
         }
     
-
+        return false;
     }
 
     const isScrolledChat = (currentChatId) => {
@@ -515,13 +524,7 @@ const Chat = ({ profileData, setProfileData }) => {
             upgradedPedingChat.push(firstChatId)
 
         } else {
-            /*let nextIndex = 0;
-
-            if (messageHistory[chatId] !== undefined){
-                nextIndex = messageHistory[chatId].length;
-            }*/
-            
-
+        
             setActiveChat([...currentActiveChat, chatId])
 
         }

@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
 import "./register.css";
+import useSingIn from "./regHook/useSingIn";
+import { useTestContext } from "../../context/testContext";
 
-const RegistrationProcessBar = ({ PasswordResult, EmailResult, UsernameResult,
+const RegistrationProcessBar = ({ PasswordResult, EmailResult,
     PasswordConfirm, FirstnameResult, LastnameResult }) => {
+
+    const {Username, setUsernameState, UsernameResult, setUsernameResultValue, setInfoBoxValue} = useTestContext()
 
     const [resultCount, setResultount] = useState(0)
 
     useEffect(() => {
+        console.log("lefut1")
+        console.log(UsernameResult)
+        console.log(Username)
         calculateProcessPogres()
 
     }, [PasswordResult, EmailResult, UsernameResult,
         PasswordConfirm, FirstnameResult, LastnameResult])
+
+    
 
     const calculateProcessPogres = () => {
         let resultList = [PasswordResult, EmailResult, UsernameResult, PasswordConfirm, FirstnameResult, LastnameResult];
@@ -21,7 +30,6 @@ const RegistrationProcessBar = ({ PasswordResult, EmailResult, UsernameResult,
             }
         })
         localResult == 90 ? setResultount(97) : setResultount(localResult)
-
     }
 
     return (

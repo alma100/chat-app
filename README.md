@@ -22,7 +22,7 @@ This is a baseic chat application. The purpose to create this project to underst
 ![MSSQL Server](https://img.shields.io/badge/MSSQL%20Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![[MaterialUI][Material-UI-badge]](https://material-ui.com/)
+![MaterialUI](https://img.shields.io/badge/Material-UI?logo=Material-UI)
 
 
 ## Table of Contents

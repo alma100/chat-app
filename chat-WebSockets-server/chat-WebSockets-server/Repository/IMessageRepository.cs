@@ -10,5 +10,5 @@ public interface IMessageRepository
 
     Dictionary<int, List<Message>> GetMessageByUser(string userId, int nextIndex);
 
-    Dictionary<int, List<Message>> GetMessageByChatId(int chatId, int nextIndex);
+    Task<Dictionary<int, List<Message>>> GetMessageByChatId(int chatId, int nextIndex);
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Grid } from "@mui/material";
 import "./register.css";
@@ -9,17 +9,21 @@ import PasswordInput from "./registrationPasswordInput";
 import PasswordConfirmInput from "./regPassConfirmInput";
 import SuccessRegistration from "./successfulRegistration";
 import RegistrationProcessBar from "./registrationProcessbar";
+import useSingIn from "./regHook/useSingIn";
+import { TestContext } from "../../context/testContext";
 
 
 
 const Registration = () => {
 
+    const { Username, setUsernameState, UsernameResult, setUsernameResultValue, setInfoBoxValue, UsernameInfoBox } = useSingIn()
+
     const [registrationResult, setRegistrationResult] = useState(null);
     const [serverErrorMessage, setServerErrorMessage] = useState(null);
 
-    const [Username, setUsername] = useState(null);
+    /*const [Username, setUsername] = useState(null);
     const [UsernameResult, setUsernameResult] = useState(null);
-    const [UsernameInfoBox, setUsernameInfoBox] = useState(null);
+    const [UsernameInfoBox, setUsernameInfoBox] = useState(null);*/
 
     const [Email, setEmail] = useState(null);
     const [EmailResult, setEmailResult] = useState(null);
@@ -44,6 +48,9 @@ const Registration = () => {
     const navigate = useNavigate();
 
 
+    useEffect(() => {
+        console.log(UsernameResult)
+    }, [UsernameResult])
 
     const registrationFetch = async (data) => {
 
@@ -97,9 +104,9 @@ const Registration = () => {
                 setEmailResult(false);
                 setEmailInfoBox(serverErrorMessage[key]);
             } else if (key.includes("User")) {
-                setUsername(null);
-                setUsernameResult(false);
-                setUsernameInfoBox(serverErrorMessage[key]);
+                setUsernameState(null);
+                setUsernameResultValue(false);
+                setInfoBoxValue(serverErrorMessage[key]);
             }
         }
     }
@@ -114,88 +121,83 @@ const Registration = () => {
 
                             </Grid>
                             <Grid item xs={4}>
+                                <TestContext.Provider value={{Username, setUsernameState, UsernameResult, setUsernameResultValue, setInfoBoxValue, UsernameInfoBox}}>
 
-                                <div id="registerContainer">
-                                    <div id="regContextContainer">
-                                        <RegistrationProcessBar
-                                        PasswordResult={PasswordResult}
-                                        EmailResult={EmailResult}
-                                        UsernameResult={UsernameResult}
-                                        PasswordConfirm={PasswordConfirm}
-                                        FirstnameResult={FirstnameResult}
-                                        LastnameResult={LastnameResult}
-                                        />
-                                        <div id="registrationBox">
-                                            <h2>Sign Up</h2>
-                                        </div>
-                                        <NameInput
-                                            FirstnameResult={FirstnameResult}
-                                            Firstname={Firstname}
-                                            LastnameResult={LastnameResult}
-                                            Lastname={Lastname}
-                                            setFirstnameResult={setFirstnameResult}
-                                            setFirstname={setFirstname}
-                                            setLastnameResult={setLastnameResult}
-                                            setLastname={setLastname}
-                                        />
 
-                                        <div id="registrationUserDataContainer">
-                                            <UsernameInput
-                                                UsernameResult={UsernameResult}
-                                                Username={Username}
-                                                setUsernameResult={setUsernameResult}
-                                                setUsername={setUsername}
-                                                UsernameInfoBox={UsernameInfoBox}
-                                            />
-
-                                            <EmailInput
+                                    <div id="registerContainer">
+                                        <div id="regContextContainer">
+                                            <RegistrationProcessBar
+                                                PasswordResult={PasswordResult}
                                                 EmailResult={EmailResult}
-                                                Email={Email}
-                                                EmailInfoBox={EmailInfoBox}
-                                                setEmailResult={setEmailResult}
-                                                setEmail={setEmail}
-                                            />
-
-                                            <PasswordInput
-                                                PasswordResult={PasswordResult}
-                                                Password={Password}
-                                                passwordVisible={passwordVisible}
-                                                PasswordInfoBox={PasswordInfoBox}
-                                                setPasswordResult={setPasswordResult}
-                                                setPassword={setPassword}
-                                                setPasswordConfirm={setPasswordConfirm}
-                                                PasswordConfirmValue={PasswordConfirmValue}
-                                                setPasswordVisible={setPasswordVisible}
-                                            />
-
-                                            <PasswordConfirmInput
                                                 PasswordConfirm={PasswordConfirm}
-                                                passwordConfirmVisible={passwordConfirmVisible}
-                                                PasswordConfirmValue={PasswordConfirmValue}
-                                                PasswordResult={PasswordResult}
-                                                setPasswordConfirm={setPasswordConfirm}
-                                                setPasswordConfirmValue={setPasswordConfirmValue}
-                                                setPasswordConfirmVisible={setPasswordConfirmVisible}
-                                                Password={Password}
+                                                FirstnameResult={FirstnameResult}
+                                                LastnameResult={LastnameResult}
+                                            />
+                                            <div id="registrationBox">
+                                                <h2>Sign Up</h2>
+                                            </div>
+                                            <NameInput
+                                                FirstnameResult={FirstnameResult}
+                                                Firstname={Firstname}
+                                                LastnameResult={LastnameResult}
+                                                Lastname={Lastname}
+                                                setFirstnameResult={setFirstnameResult}
+                                                setFirstname={setFirstname}
+                                                setLastnameResult={setLastnameResult}
+                                                setLastname={setLastname}
                                             />
 
-                                            {
-                                                PasswordResult === true && EmailResult === true && UsernameResult === true &&
-                                                PasswordConfirm === true && FirstnameResult  === true && LastnameResult === true ?
-                                                    (
-                                                        <div>
-                                                            <button onClick={() => registrationHandler()}>Submit</button>
-                                                        </div>
-                                                    ) : (
-                                                        <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
+                                            <div id="registrationUserDataContainer">
+                                                <UsernameInput />
 
-                                                    )
-                                            }
+                                                <EmailInput
+                                                    EmailResult={EmailResult}
+                                                    Email={Email}
+                                                    EmailInfoBox={EmailInfoBox}
+                                                    setEmailResult={setEmailResult}
+                                                    setEmail={setEmail}
+                                                />
+
+                                                <PasswordInput
+                                                    PasswordResult={PasswordResult}
+                                                    Password={Password}
+                                                    passwordVisible={passwordVisible}
+                                                    PasswordInfoBox={PasswordInfoBox}
+                                                    setPasswordResult={setPasswordResult}
+                                                    setPassword={setPassword}
+                                                    setPasswordConfirm={setPasswordConfirm}
+                                                    PasswordConfirmValue={PasswordConfirmValue}
+                                                    setPasswordVisible={setPasswordVisible}
+                                                />
+
+                                                <PasswordConfirmInput
+                                                    PasswordConfirm={PasswordConfirm}
+                                                    passwordConfirmVisible={passwordConfirmVisible}
+                                                    PasswordConfirmValue={PasswordConfirmValue}
+                                                    PasswordResult={PasswordResult}
+                                                    setPasswordConfirm={setPasswordConfirm}
+                                                    setPasswordConfirmValue={setPasswordConfirmValue}
+                                                    setPasswordConfirmVisible={setPasswordConfirmVisible}
+                                                    Password={Password}
+                                                />
+
+                                                {
+                                                    PasswordResult === true && EmailResult === true && UsernameResult === true &&
+                                                        PasswordConfirm === true && FirstnameResult === true && LastnameResult === true ?
+                                                        (
+                                                            <div>
+                                                                <button onClick={() => registrationHandler()}>Submit</button>
+                                                            </div>
+                                                        ) : (
+                                                            <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
+
+                                                        )
+                                                }
+                                            </div>
+
                                         </div>
-
                                     </div>
-                                </div>
-
+                                </TestContext.Provider>
                             </Grid>
                             <Grid item xs={4}>
 
