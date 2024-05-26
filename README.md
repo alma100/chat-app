@@ -4,7 +4,7 @@
 
 ## Overview
 
-This is a baseic chat application. The purpose to create this project to understand how to work websocket connection. This application simulated how to worke a real chat app. After registration, you able to logging into the application. After that you can easily keep in touch with your friends, you should only know your friends name to create a private chat channel. You don't have to worry about losing your old messages, because all messages are saved in a database. If you want, you can add reactions (emoticons) to each message to help express yourself more easily.
+This is a baseic chat application. The purpose to create this project to understand how to work websocket connection. This application simulated how a real chat application  work. After registration, you able to logging into the application. After that you can easily keep in touch with your friends, you should only know your friends name to create a private chat channel. You don't have to worry about losing your old messages, because all messages are saved in a database. If you want, you can add reactions (emoticons) to each message to help express yourself more easily.
 
 ## Table of Contents
 
