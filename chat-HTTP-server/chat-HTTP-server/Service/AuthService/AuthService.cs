@@ -23,6 +23,7 @@ public class AuthService : IAuthService
     public async Task<AuthResult> RegisterAsync(string email, string username, string password, string role, string firstName, string lastName)
     {
         var user = new User { UserName = username, Email = email, LastName = lastName, FirstName = firstName };
+        
         var result = await _userManager.CreateAsync(user, password);
        
         if (!result.Succeeded)
@@ -30,7 +31,8 @@ public class AuthService : IAuthService
             return FailedRegistration(result, email, username);
         }
 
-        await _userManager.AddToRoleAsync(user, role); // Adding the user to a role
+        await _userManager.AddToRoleAsync(user, role);
+        
         return new AuthResult(true, email, username, "", "");
     }
 
@@ -48,13 +50,14 @@ public class AuthService : IAuthService
 
         var validInput = managedUserByEmail != null ? managedUserByEmail : managedUserByUserName;
         
-        var test = await _singInManager.CheckPasswordSignInAsync(validInput, password, lockoutOnFailure: true);
+        var signInResult = await _singInManager.CheckPasswordSignInAsync(validInput, password, lockoutOnFailure: true);
         
-        if (!test.Succeeded)
+        if (!signInResult.Succeeded)
         {
             return InvalidPassword(username, validInput.UserName);
         }
         var roles = await _userManager.GetRolesAsync(validInput);
+        
         var accessToken = _tokenService.CreateToken(validInput, roles[0]);
 
         return new AuthResult(true, validInput.Email, validInput.UserName, accessToken, validInput.Id);
@@ -67,7 +70,6 @@ public class AuthService : IAuthService
 
         foreach (var error in result.Errors)
         {
-            Console.WriteLine(error.Description);
             authResult.ErrorMessages.Add(error.Code, error.Description);
         }
 

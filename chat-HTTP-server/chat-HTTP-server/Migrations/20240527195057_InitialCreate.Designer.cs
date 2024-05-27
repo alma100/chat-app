@@ -12,8 +12,8 @@ using chat_HTTP_server.Context;
 namespace chat_HTTP_server.Migrations
 {
     [DbContext(typeof(ChatContext))]
-    [Migration("20240511150944_init")]
-    partial class init
+    [Migration("20240527195057_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -210,6 +210,29 @@ namespace chat_HTTP_server.Migrations
                     b.HasIndex("MessageId");
 
                     b.ToTable("Emoji");
+                });
+
+            modelBuilder.Entity("chat_HTTP_server.Model.LogModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LogMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LogType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Log");
                 });
 
             modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
