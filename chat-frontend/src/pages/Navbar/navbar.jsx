@@ -8,7 +8,7 @@ const Navbar = () => {
          <Box className="navbarBox">
           <Grid container alignItems="center">
             <Grid item xs={8} md={10}>
-              asd
+              
             </Grid>
             <Grid item xs={2} md={1}>
               profile

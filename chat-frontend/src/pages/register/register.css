@@ -181,6 +181,31 @@
     align-items: center;
 }
 
+#regSuccesResContainer {
+    width: 450px;
+    height: 100px;
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border: 1px solid gray;
+    background-color: whitesmoke;
+    display: grid;
+    grid-template-rows: auto auto auto;
+    justify-items: center;
+    align-items: center;
+    text-align: center;
+}
+
+.centered {
+    justify-self: center;
+}
+
+.clickable {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+
+
 #succesRegResRoot{
     display: flex;
     justify-content: center;
