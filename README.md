@@ -12,6 +12,7 @@ This is a basic chat application. The purpose to create this project to understa
 - [Build With](#build-with)
 - [Features](#features)
 - [Installation](#installation)
+- [Usage](#usage)
 
 
 ## Built With
@@ -52,6 +53,21 @@ Chat (main page):
 
 
 ## Usage
+
+First of all, you have to create a new account. If every input field is correct you, submit button appear.
+
+![reg-example](https://github.com/alma100/chat-app/assets/89401657/932c7b4b-78c7-4702-b627-48719efdd200)
+
+If registration succes you will see a confirm message.
+
+![reg-confirm](https://github.com/alma100/chat-app/assets/89401657/48fe66d3-cd45-40d4-a90f-41c104bf20e4)
+
+After that you able to log into the application.
+
+![log-in](https://github.com/alma100/chat-app/assets/89401657/3b819343-c305-4596-baf6-9594573e4a95)
+
+
+
 
 
 ## Contact
