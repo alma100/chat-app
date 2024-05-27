@@ -50,6 +50,48 @@ Chat (main page):
 
 ## Installation
 
+Prerequisites:
+- .NET 8.0 SDK
+- Node.js (20.11 or later) and npm (10.2.4 or later)
+- SQL Server
+
+1. Clone the repository. (git clone git@github.com:alma100/chat-app.git)
+   
+Backend:
+
+2. Navigate a "chat-HTTP-server": `cd chat-HTTP-server/chat-HTTP-server`
+3. Configure the `appsettings.json`
+   - Set your database connection string. Example: `"ConnectionStrings": {
+  "DefaultConnectionString": "Server=localhost,1433;Database=Chat;User Id=sa;Password=yourStrong(!)Password;Encrypt=false;"}`
+   - If you dont have any SQL server you have to do a new one.
+   - Install docker: https://docs.docker.com/engine/install/
+   - Run this image in terminal: `docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=yourStrong(!)Password" -p 1433:1433 -v <absolute path to the file>:/var/opt/mssql/data mcr.microsoft.com/mssql/server:2022-latest`
+   - Important: If your os Windows, open docker desktop first, and run the command second.
+   - Don't forget to change `<absolute path to the file>` this section to your file absolute path.
+   - Set JWT variable: `"Jwt": {
+    "Key": "Akljw56DWqDDA120978juKWPxhrz65u7uturtu556786767ujhgg",
+    "Issuer": "https://localhost:5129/",
+    "Audience": "https://localhost:5129/"
+  },`
+4. Add and run database migrations to create schemas:
+   - Add migration: `dotnet ef migrations add InitialCreate`
+   - Update database: `dotnet ef database update`
+6. Run the application: `dotnet run`
+7. Back to the root folder: `cd ../../`
+8. Set the websocket server `appsettings.json`:
+   - `cd chat-WebSockets-server\chat-WebSockets-server`
+   - Set the same value to the connection string and JWT token.
+   - Set the "MessageIndex" variable: `"MessageIndex": {
+    "InitialIndex": "200"
+      }` This variable set that how many old messages send to the client/chat/fetch. 
+   - You dont need to create a migration step here again.
+9. Run the application: `dotnet run`
+
+Frontend:
+
+10. Navigate to the frontend directory: `cd ../../frontend`
+11. Install dependencies: `npm install`
+12. Run the application: `npm run dev`
 
 
 ## Usage
