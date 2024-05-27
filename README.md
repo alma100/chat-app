@@ -55,7 +55,7 @@ Prerequisites:
 - Node.js (20.11 or later) and npm (10.2.4 or later)
 - SQL Server
 
-1. Clone the repository. (git clone git@github.com:alma100/chat-app.git)
+1. Clone the repository. (`git clone git@github.com:alma100/chat-app.git`)
    
 Backend:
 
