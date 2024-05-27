@@ -54,7 +54,7 @@ Chat (main page):
 
 ## Usage
 
-First of all, you have to create a new account. If every input field is correct you, submit button appear.
+First of all, you have to create a new account. If every input field is correct, submit button appear.
 
 ![reg-example](https://github.com/alma100/chat-app/assets/89401657/932c7b4b-78c7-4702-b627-48719efdd200)
 
