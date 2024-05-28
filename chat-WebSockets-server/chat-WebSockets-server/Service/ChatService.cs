@@ -10,8 +10,6 @@ using System.Text.Json;
 
 public class ChatService : IChatService
 {
-    
-    
     private IMessageRepository _messageRepository;
 
     private IUserRepository _userRepository;
@@ -82,7 +80,8 @@ public class ChatService : IChatService
 
             Array.Clear(buffer, 0, buffer.Length);
         }
-       _webSocketManager.RemoveSocket(socket);
+        
+        _webSocketManager.RemoveSocket(socket);
     }
     
     private async Task SendMessageToGroup(List<WebSocket> targetUsers,  WebSocketObj messageObject)
