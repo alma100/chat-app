@@ -39,31 +39,7 @@ public class MessageRepository : IMessageRepository
         
         return oldMessageObj;
     }
-
-    public Dictionary<int, List<Message>> GetMessageByUser(string userId, int nextIndex)
-    {
-        var initialIndex = Int32.Parse(_configuration["MessageIndex:InitialIndex"]);
-
-        var skipValue = nextIndex - initialIndex;
-
-        var takeValue = nextIndex;
-        
-        var currentUser = _chatContext.Users.FirstOrDefault(u => u.Id == userId);
-
-        var messagesByChatId = _chatContext.Chat
-            .Where(c => c.Users.Contains(currentUser))
-            .SelectMany(c => c.Messages)
-            .Include(m => m.Emoji)
-            .OrderBy(m => m.CreatedAt)
-            .AsEnumerable()
-            .GroupBy(m => m.ChatId)
-            .ToDictionary(g => g.Key, g => g.Skip(skipValue)
-                .Take(takeValue).ToList());
-
-        return messagesByChatId;
-
-    }
-
+    
     public async Task<Dictionary<int, List<Message>>> GetMessageByChatId(int chatId, int nextIndex)
     {
         var indexRange = Int32.Parse(_configuration["MessageIndex:InitialIndex"]);
@@ -74,12 +50,8 @@ public class MessageRepository : IMessageRepository
             .Include(m => m.Emoji)
             .OrderBy(m => m.CreatedAt)
             .ToListAsync();
-
-        Console.WriteLine(messagesByChatId.Count);
         
         var skipValue = messagesByChatId.Count - nextIndex;
-
-        Console.WriteLine(skipValue);
         
         var result = new List<Message>();
         

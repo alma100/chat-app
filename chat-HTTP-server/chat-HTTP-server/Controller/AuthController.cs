@@ -45,7 +45,7 @@ public class AuthController : ControllerBase
                 
                 var log = LogEnum.logInfo.CreateLog($"{authResult.UserName} logged in");
                 
-                _log.AddLog(log);
+                await _log.AddLog(log);
                 
                 return Ok(new AuthResponse(authResult.Email, authResult.UserName, authResult.Id));
             }
@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
         {
             var log = LogEnum.logError.CreateLog($"login process failed: {e}");
                 
-            _log.AddLog(log);
+            await _log.AddLog(log);
 
             return StatusCode(500);
         }
