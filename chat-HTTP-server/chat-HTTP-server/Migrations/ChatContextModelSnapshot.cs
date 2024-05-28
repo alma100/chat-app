@@ -209,6 +209,29 @@ namespace chat_HTTP_server.Migrations
                     b.ToTable("Emoji");
                 });
 
+            modelBuilder.Entity("chat_HTTP_server.Model.LogModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LogMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LogType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Log");
+                });
+
             modelBuilder.Entity("chat_HTTP_server.Model.Message", b =>
                 {
                     b.Property<int>("MessageId")

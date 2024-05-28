@@ -37,8 +37,7 @@ public class UserRepository : IUserRepository
         else
         {
             var lastName = splittedString[1];
-            Console.WriteLine(lastName);
-
+            
             users.AddRange(await _chatContext.Users.Where(x => x.FirstName == splittedString[0] && x.LastName == lastName && x.Id != id).ToListAsync());
             users.AddRange(await _chatContext.Users.Where(x => x.FirstName == splittedString[0] &&
                                                          x.LastName != lastName && x.LastName.Contains(lastName) &&
@@ -73,14 +72,15 @@ public class UserRepository : IUserRepository
 
         foreach (var chat in userChats)
         {
-            //var userId = chat.Users.Where(u => u.Id != id).Select(x => x.Id).ToList();
             var userFullName = chat.Users.Where(x => x.Id != id).Select(u => u.FirstName + " " + u.LastName).ToList();
+            
             var newChatDto = new ChatDto
             {
                 Id = chat.Id,
                 UsersFullName = userFullName
 
             };
+            
             result.Add(newChatDto);
         }
         return result;
