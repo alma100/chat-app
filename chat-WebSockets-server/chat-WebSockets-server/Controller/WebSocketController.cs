@@ -30,19 +30,5 @@ public class WebSocketController : ControllerBase
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
         }
     }
-    
-    /*[Route("/ws/update")]
-    public async Task GetUserData()
-    {
-        if (HttpContext.WebSockets.IsWebSocketRequest)
-        {
-            using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            await _chatService.HandleWebSocketConnection(webSocket);
-        }
-        else
-        {
-            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-        }
-    }*/
    
 }

@@ -32,7 +32,6 @@ public class ChatService : IChatService
         {
             var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), default);
             var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-            Console.WriteLine($"üzenet: {message}");
             var messageObject = new WebSocketObj();
             if(message != "")
             {
@@ -42,7 +41,6 @@ public class ChatService : IChatService
             
             if (messageObject.Event == "connection request")
             { 
-                Console.WriteLine("asd"); 
                 await _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
                 var initRes = new WebSocketObj
                 {
@@ -59,20 +57,10 @@ public class ChatService : IChatService
             }
             else if(messageObject.Event == "message")
             {
-                if (messageObject.Message != null)
-                {
-                    Console.WriteLine($"Message {messageObject.Message}");
-                }
-                else
-                {
-                    Console.WriteLine("Message is null.");
-                }
                 await handleMessage(messageObject, "message");
             }
             else if (messageObject.Event == "add emoji")
             {
-                //add emoji to database
-                Console.WriteLine("add emoji");
                 await handleMessage(messageObject, "add emoji");
             }
             else if (messageObject.Event == "remove emoji")
@@ -82,7 +70,7 @@ public class ChatService : IChatService
 
             Array.Clear(buffer, 0, buffer.Length);
         }
-       _webSocketManager.RemoveSocket(socket);
+        _webSocketManager.RemoveSocket(socket);
     }
     
     private async Task SendMessageToGroup(List<WebSocket> targetUsers,  WebSocketObj messageObject)
@@ -95,7 +83,6 @@ public class ChatService : IChatService
 
         foreach (var user in targetUsers)
         {
-            Console.WriteLine("message counter");
             await user.SendAsync(jsonBytes, WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
@@ -103,23 +90,24 @@ public class ChatService : IChatService
     private async Task handleMessage(WebSocketObj messageObject, string eventType)
     {
         var chatId = messageObject.Message.ChatId;
+        
         var users = _userRepository.GetUserByChatId(chatId);
+        
         var targetusers = _webSocketManager.FindTargetedUser(users);
 
         var message = new Message();
-        if (eventType == "connection request")
-        {
-            
-        }
-        else if (eventType == "message")
+        
+        if (eventType == "message")
         {
             message = await SaveMessage(messageObject.Message);
-        }else if (eventType == "add emoji" || eventType == "remove emoji")
+        }
+        else if (eventType == "add emoji" || eventType == "remove emoji")
         {
             message = await UpdateMessageEmoji(messageObject.Message);
         }
         
         messageObject.Message = message;
+        
         await SendMessageToGroup(targetusers, messageObject);
     }
 

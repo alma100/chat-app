@@ -19,25 +19,14 @@ public class WebSocketManager : IWebSocketManager
         var socketsForUser = SocketGroups[userID];
 
         var existingSocket = socketsForUser.FirstOrDefault(s => s == socket);
+        
         if (existingSocket != null)
         {
             await existingSocket.CloseAsync(WebSocketCloseStatus.NormalClosure,"close", default);
         }
+        
         SocketGroups[userID].Add(socket);
         
-        
-
-        foreach (var VARIABLE in SocketGroups)
-        {
-            Console.WriteLine($"key: {VARIABLE.Key} : {VARIABLE.Value.Count}");
-            foreach (var webSocket in VARIABLE.Value)
-            {
-                Console.WriteLine(webSocket.State);
-                Console.WriteLine(webSocket.SubProtocol);
-                Console.WriteLine(webSocket.CloseStatusDescription);
-            }
-        }
-        Console.WriteLine($"socket in group: {SocketGroups.Count} after add socket");
         return true;
     }
     
@@ -66,8 +55,6 @@ public class WebSocketManager : IWebSocketManager
 
     public void RemoveSocket(WebSocket socket)
     {
-        Console.WriteLine("remove method start");
-        Console.WriteLine($"socket in group: {SocketGroups.Count} socket");
         foreach (var group in SocketGroups.Values)
         {
             if (group.Contains(socket))
@@ -77,12 +64,9 @@ public class WebSocketManager : IWebSocketManager
                 {
                     var key = SocketGroups.FirstOrDefault(x => x.Value == group).Key;
                     SocketGroups.Remove(key);
-                    Console.WriteLine($"{socket} removed");
-                    Console.WriteLine($"socket in group: {SocketGroups.Count} after remove socket");
                 }
                 break;
             }
         }
-        
     }
 }
