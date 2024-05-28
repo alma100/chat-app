@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using chat_HTTP_server.Mapper;
 using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
 using chat_HTTP_server.Repository.ChatRepository;
@@ -30,19 +31,14 @@ public class ChatController : ControllerBase
     {
         string jwtToken = HttpContext.Request.Cookies["access_token"];
 
-        if (jwtToken == null)
-        {
-            return Unauthorized();
-        }
+        if (jwtToken == null) return Unauthorized();
+        
 
-        var userId = GetUserIdByJwTtoken(jwtToken);
+        var userId = GetUserIdByJwtToken(jwtToken);
         
         var result = await _userRepository.GetUserByName(searchRequest.name, userId);
-        var userDtos = result.Select(u => new UserDto {
-            Id = u.Id,
-            FirstName = u.FirstName,
-            LastName = u.LastName
-        }).ToList();
+        
+        var userDtos = result.Select(u => u.ConvertUserToUserDto()).ToList();
     
         return Ok(userDtos);
     }
@@ -51,16 +47,11 @@ public class ChatController : ControllerBase
     [Authorize(Roles = "user")]
     public async Task<ActionResult> GetUserById([FromBody]string userId)
     {
-        Console.WriteLine(userId);
         var result = await _userRepository.GetUserById(userId);
-        var userDtos = new UserDto
-        {
-            Id = result.Id,
-            FirstName = result.FirstName,
-            LastName = result.LastName
-        };
+        
+        var userDto = result.ConvertUserToUserDto();
     
-        return Ok(userDtos);
+        return Ok(userDto);
     }
     
     [HttpPost("creatChat")]
@@ -68,6 +59,7 @@ public class ChatController : ControllerBase
     public async Task<IActionResult> CreateChat(CreateChatRequest request)
     {
         var users = await _userRepository.GetUserById(request.Usersid);
+        
         Chat newChat = new Chat
         {
             Messages = new List<Message>(),
@@ -75,19 +67,26 @@ public class ChatController : ControllerBase
         };
         
         string jwtToken = HttpContext.Request.Cookies["access_token"];
-        var userId = GetUserIdByJwTtoken(jwtToken);
+        
+        if (jwtToken == null) return Unauthorized();
+        
+        var userId = GetUserIdByJwtToken(jwtToken);
 
         var userFullname = users.Where(u => u.Id != userId).Select(u => u.FirstName + " " + u.LastName).ToList();
+        
         var chatId = await _chatRepository.CreateChat(newChat);
+        
         if (chatId == -1)
         {
             return BadRequest();
         }
+        
         var chatTdo = new ChatDto
         {
             Id = chatId,
             UsersFullName = userFullname
         };
+        
         return Ok(chatTdo);
     }
 
@@ -96,16 +95,20 @@ public class ChatController : ControllerBase
     public async Task<ActionResult> GetAllChat()
     {
         string jwtToken = HttpContext.Request.Cookies["access_token"];
-        var userId = GetUserIdByJwTtoken(jwtToken);
+
+        if (jwtToken == null) return Unauthorized();
+        
+        var userId = GetUserIdByJwtToken(jwtToken);
 
         var res = await _userRepository.GetAllChatByUserId(userId);
         
         return Ok(res);
     }
 
-    private string GetUserIdByJwTtoken(string jwtToken)
+    private static string GetUserIdByJwtToken(string jwtToken)
     {
         var handler = new JwtSecurityTokenHandler();
+        
         var token = handler.ReadJwtToken(jwtToken);
         
         var claims = token.Claims.ToList();
@@ -122,4 +125,6 @@ public class ChatController : ControllerBase
 
         return userId;
     }
+    
+    
 }

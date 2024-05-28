@@ -3,8 +3,5 @@
 public class ChatDto
 {
     public int Id { get; set; }
-    
-    //public List<string> UserId { get; set; }
-    
     public List<string> UsersFullName { get; set; }
 }

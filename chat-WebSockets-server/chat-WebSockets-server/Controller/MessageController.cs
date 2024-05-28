@@ -12,61 +12,88 @@ namespace chat_WebSockets_server.WebSocketController;
 public class MessageController : ControllerBase
 {
 
-    private IMessageRepository _messageRepository;
+    private readonly IMessageRepository _messageRepository;
     
-    private IConfiguration _configuration;
+    private readonly IConfiguration _configuration;
+
+    private readonly ILogger<MessageController> _logger;
     
 
-    public MessageController(IMessageRepository messageRepository, IConfiguration configuration)
+    public MessageController(IMessageRepository messageRepository, IConfiguration configuration, ILogger<MessageController> logger)
     {
         _messageRepository = messageRepository;
         _configuration = configuration;
+        _logger = logger;
     }
 
-
-    [HttpGet("GetAllChatMessage")]
-    //[Authorize(Roles = "user")]
-    public ActionResult GetAllChatMessage()
-    {
-        var httpContext = HttpContext;
-        string jwtToken = httpContext.Request.Cookies["access_token"];
-        var userId = GetUserIdByJwTtoken(jwtToken);
-
-        var currentIndex = updateCurrentMessageIndex(0);
-        
-        var res = _messageRepository.GetMessageByUser(userId, currentIndex);
-
-        return Ok(res);
-    }
     
     [HttpGet("GetChatMessage/{chatId}/{index}")]
+    [Authorize(Roles = "user")]
     public async Task<ActionResult> GetChatMessage(int chatId, int index)
     {
-        Console.WriteLine(chatId);
-        var currentIndex = 0;
-        
-        if (index == 0 )
+        try
         {
-            currentIndex = updateCurrentMessageIndex(0);
+            string jwtToken = HttpContext.Request.Cookies["access_token"];
+
+            if (jwtToken == null)
+            {
+                var clientIp = GetClientIp(HttpContext);
+                
+                _logger.LogWarning($"{clientIp} try to request {chatId} messages in range {index}");
+                
+                return Unauthorized();
+            }
+                
+            var currentIndex = 0;
+        
+            if (index == 0 )
+            {
+                currentIndex = UpdateCurrentMessageIndex(0);
+            }
+            else
+            {
+                currentIndex = UpdateCurrentMessageIndex(index);
+            }
+
+            var user = GetUserIdByJwtToken(jwtToken);
+            
+            _logger.LogInformation($"{user} successfull request chat ID:{chatId} messages in range {index}");
+            
+            var res =await  _messageRepository.GetMessageByChatId(chatId, currentIndex);
+            
+            return Ok(res);
         }
-        else
+        catch (Exception e)
         {
-            currentIndex = updateCurrentMessageIndex(index);
+            var clientIp = GetClientIp(HttpContext);
+            
+            _logger.LogError($"{clientIp} try to request chat ID:{chatId} messages in range {index} but unexpected error occured: {e}");
+            
+            throw;
         }
         
-        Console.WriteLine(currentIndex);
-        var res =await  _messageRepository.GetMessageByChatId(chatId, currentIndex);
+    }
+
+    private int UpdateCurrentMessageIndex(int index)
+    {
+        var initialIndex = Int32.Parse(_configuration["MessageIndex:InitialIndex"]);
         
-        return Ok(res);
+        if (index == 0)
+        {
+            return initialIndex;
+        }
+
+        var newIndex = index + initialIndex;
+        
+        return newIndex;
     }
     
-    
-    private string GetUserIdByJwTtoken(string jwtToken)
+    private static string GetUserIdByJwtToken(string jwtToken)
     {
         var handler = new JwtSecurityTokenHandler();
+        
         var token = handler.ReadJwtToken(jwtToken);
-
-        // A claim-ek kiolvasása a JWT tokenből
+        
         var claims = token.Claims.ToList();
 
         var userId = "";
@@ -82,17 +109,15 @@ public class MessageController : ControllerBase
         return userId;
     }
 
-    private int updateCurrentMessageIndex(int index)
+    private string GetClientIp(HttpContext httpContext)
     {
-        var initialIndex = Int32.Parse(_configuration["MessageIndex:InitialIndex"]);
-        
-        if (index == 0)
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+
+        if (httpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
         {
-            return initialIndex;
+            ip = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
         }
 
-        var newIndex = index + initialIndex;
-        
-        return newIndex;
+        return ip;
     }
 }

@@ -1,6 +1,9 @@
 ﻿
 using System.Security.Claims;
+using chat_HTTP_server.Mapper;
+using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
+using chat_HTTP_server.Repository.LogRepository;
 using chat_HTTP_server.Service.AuthModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,13 +14,16 @@ namespace chat_HTTP_server.Controller;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private IAuthService _authService;
+    private readonly IAuthService _authService;
 
-    private IUserRepository _userRepository;
-    public AuthController(IAuthService authService, IUserRepository userRepository)
+    private readonly IUserRepository _userRepository;
+
+    private readonly ILogRepository _log;
+    public AuthController(IAuthService authService, IUserRepository userRepository, ILogRepository log)
     {
         _authService = authService;
         _userRepository = userRepository;
+        _log = log;
     }
 
     [HttpPost("login")]
@@ -30,12 +36,17 @@ public class AuthController : ControllerBase
         
         try
         {
-            var authResult = await _authService.LoginAsync(request.name, request.password);
+            var authResult = await _authService.LoginAsync(request.Name, request.Password);
             
             if (authResult.Success)
             {
                 
                 setTokenCookie(authResult.Token, "access_token");
+                
+                var log = LogEnum.logInfo.CreateLog($"{authResult.UserName} logged in");
+                
+                await _log.AddLog(log);
+                
                 return Ok(new AuthResponse(authResult.Email, authResult.UserName, authResult.Id));
             }
 
@@ -43,8 +54,11 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var log = LogEnum.logError.CreateLog($"login process failed: {e}");
+                
+            await _log.AddLog(log);
+
+            return StatusCode(500);
         }
     }
     
@@ -132,12 +146,7 @@ public class AuthController : ControllerBase
             }
 
             var res = await _userRepository.GetUserById(userId);
-
-            if (res == null)
-            {
-                return Unauthorized();
-            }
-        
+            
             return Ok(new AuthResponse(res.Email, res.UserName, res.Id));
         }
         catch (Exception e)
