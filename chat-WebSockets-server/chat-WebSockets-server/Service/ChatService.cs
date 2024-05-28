@@ -10,11 +10,11 @@ using System.Text.Json;
 
 public class ChatService : IChatService
 {
-    private IMessageRepository _messageRepository;
+    private readonly IMessageRepository _messageRepository;
 
-    private IUserRepository _userRepository;
+    private readonly IUserRepository _userRepository;
 
-    private IWebSocketManager _webSocketManager;
+    private readonly IWebSocketManager _webSocketManager;
 
     private readonly ILogger<IChatService> _logger;
 
@@ -76,7 +76,10 @@ public class ChatService : IChatService
 
             Array.Clear(buffer, 0, buffer.Length);
         }
-        _webSocketManager.RemoveSocket(socket);
+        
+        var key = _webSocketManager.RemoveSocket(socket);
+        
+        _logger.LogInformation($"user ID: {key}, {socket} removed");
     }
     
     private async Task SendMessageToGroup(Dictionary<string, WebSocket> targetUsers,  WebSocketObj messageObject)

@@ -53,20 +53,26 @@ public class WebSocketManager : IWebSocketManager
         return targetUsers;
     }
 
-    public void RemoveSocket(WebSocket socket)
+    public string RemoveSocket(WebSocket socket)
     {
         foreach (var group in SocketGroups.Values)
         {
             if (group.Contains(socket))
             {
                 group.Remove(socket);
+                var key = SocketGroups.FirstOrDefault(x => x.Value == group).Key;
+                
                 if (group.Count == 0)
                 {
-                    var key = SocketGroups.FirstOrDefault(x => x.Value == group).Key;
                     SocketGroups.Remove(key);
+
+                    return key;
                 }
-                break;
+
+                return key;
             }
         }
+
+        return null;
     }
 }

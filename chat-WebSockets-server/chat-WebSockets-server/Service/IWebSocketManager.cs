@@ -8,5 +8,5 @@ public interface IWebSocketManager
     Task<bool> AddSocketToGroup(WebSocket socket, string userID);
     Dictionary<string, WebSocket> FindTargetedUser(List<User> users);
 
-    void RemoveSocket(WebSocket socket);
+    string RemoveSocket(WebSocket socket);
 }
