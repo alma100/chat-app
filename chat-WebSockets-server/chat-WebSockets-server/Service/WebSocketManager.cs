@@ -31,9 +31,9 @@ public class WebSocketManager : IWebSocketManager
     }
     
 
-    public List<WebSocket> FindTargetedUser(List<User> users)
+    public Dictionary<string,WebSocket> FindTargetedUser(List<User> users)
     {
-        List<WebSocket> targetUsers = new();
+        Dictionary<string,WebSocket> targetUsers = new();
         
         foreach (var user in users)
         {
@@ -44,7 +44,7 @@ public class WebSocketManager : IWebSocketManager
                 {
                     if (socket.State == WebSocketState.Open)
                     {
-                        targetUsers.Add(socket);
+                        targetUsers.Add(user.Id,socket);
                     }
                 }
             }

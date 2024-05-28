@@ -22,6 +22,8 @@ public class TokenService : ITokenService
     public string CreateToken(User user, string role)
     {
         var expiration = DateTime.UtcNow.AddMinutes(ExpirationMinutes);
+        Console.WriteLine("------------------------------");
+        Console.WriteLine(expiration);
         var token = CreateJwtToken(
             CreateClaims(user, role),
             CreateSigningCredentials(),

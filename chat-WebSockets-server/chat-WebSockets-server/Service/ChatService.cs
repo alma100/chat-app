@@ -18,11 +18,14 @@ public class ChatService : IChatService
 
     private IWebSocketManager _webSocketManager;
 
-    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository, IWebSocketManager webSocketManager)
+    private readonly ILogger<IChatService> _logger;
+
+    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository, IWebSocketManager webSocketManager, ILogger<IChatService> logger)
     {
         _messageRepository = messageRepository;
         _userRepository = userRepository;
         _webSocketManager = webSocketManager;
+        _logger = logger;
     }
 
     public async Task HandleWebSocketConnection(WebSocket socket)
@@ -42,30 +45,35 @@ public class ChatService : IChatService
             if (messageObject.Event == "connection request")
             { 
                 await _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
+                
                 var initRes = new WebSocketObj
                 {
                     Event = "connection request",
                     Content = "connection opend",
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     Message = null,
                     UserId = "server"
                 };
+                
                 string jsonInitRes = JsonSerializer.Serialize(initRes);
                 byte[] initResBuffer = Encoding.UTF8.GetBytes(jsonInitRes);
+                
+                _logger.LogInformation($"User ID:{messageObject.UserId} joined to the server at: {DateTime.UtcNow}");
+                
                 await socket.SendAsync(initResBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
 
             }
             else if(messageObject.Event == "message")
             {
-                await handleMessage(messageObject, "message");
+                await HandleMessage(messageObject, "message");
             }
             else if (messageObject.Event == "add emoji")
             {
-                await handleMessage(messageObject, "add emoji");
+                await HandleMessage(messageObject, "add emoji");
             }
             else if (messageObject.Event == "remove emoji")
             {
-                await handleMessage(messageObject, "remove emoji");
+                await HandleMessage(messageObject, "remove emoji");
             }
 
             Array.Clear(buffer, 0, buffer.Length);
@@ -73,21 +81,30 @@ public class ChatService : IChatService
         _webSocketManager.RemoveSocket(socket);
     }
     
-    private async Task SendMessageToGroup(List<WebSocket> targetUsers,  WebSocketObj messageObject)
+    private async Task SendMessageToGroup(Dictionary<string, WebSocket> targetUsers,  WebSocketObj messageObject)
     {
-        
         var jsonMessage = JsonSerializer.Serialize(messageObject);
-
         
         var jsonBytes = Encoding.UTF8.GetBytes(jsonMessage);
 
         foreach (var user in targetUsers)
         {
-            await user.SendAsync(jsonBytes, WebSocketMessageType.Text, true, CancellationToken.None);
+            try
+            {
+                await user.Value.SendAsync(jsonBytes, WebSocketMessageType.Text, true, CancellationToken.None);
+                
+                _logger.LogInformation($"message ID:{messageObject.Message.MessageId} send to user ID:{user.Key} at: {DateTime.UtcNow}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, $"Try to send message ID: {messageObject.Message.MessageId} to user ID:{user.Key}, but unexpected error occured: {e} at: {DateTime.UtcNow}");
+                throw;
+            }
+            
         }
     }
 
-    private async Task handleMessage(WebSocketObj messageObject, string eventType)
+    private async Task HandleMessage(WebSocketObj messageObject, string eventType)
     {
         var chatId = messageObject.Message.ChatId;
         
@@ -113,11 +130,37 @@ public class ChatService : IChatService
 
     private async Task<Message>SaveMessage(Message message)
     {
-        return await _messageRepository.AddMessage(message);
+        try
+        {
+            var result = await _messageRepository.AddMessage(message);
+            
+            _logger.LogInformation($"message ID:{message.MessageId} saved to database at: {DateTime.UtcNow}");
+            
+            return result;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Try to save message ID:{message.MessageId} to database, but unexpected error occured: {e} at: {DateTime.UtcNow}");
+            throw;
+        }
+        
     }
     
     private async Task<Message>UpdateMessageEmoji(Message message)
     {
-        return await _messageRepository.UpdateMessageEmoji(message);
+        try
+        {
+            var result = await _messageRepository.UpdateMessageEmoji(message);
+            
+            _logger.LogInformation($"message ID:{message.MessageId} emoji list updated at: {DateTime.UtcNow}");
+
+            return result;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Try to emoji list updated message ID:{message.MessageId}, but unexpected error occured: {e} at: {DateTime.UtcNow}");
+            throw;
+        }
+        
     }
 }
