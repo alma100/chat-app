@@ -106,7 +106,8 @@ If registration succes you will see a confirm message.
 
 After that you able to log into the application.
 
-![log-in](https://github.com/alma100/chat-app/assets/89401657/3b819343-c305-4596-baf6-9594573e4a95)
+![log-in](https://github.com/alma100/chat-app/assets/89401657/86143005-90bd-4515-bb88-6061677c053c)
+
 
 
 
