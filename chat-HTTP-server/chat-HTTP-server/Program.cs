@@ -3,9 +3,7 @@ using chat_HTTP_server.Context;
 using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
 using chat_HTTP_server.Repository.ChatRepository;
-using chat_HTTP_server.Repository.LogRepository;
 using chat_HTTP_server.Service.AuthModel;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +13,6 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -125,7 +121,6 @@ void AddServices()
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<IChatRepository, ChatRepository>();
-    builder.Services.AddScoped<ILogRepository, LogRepository>();
 }
 
 #endregion

@@ -134,7 +134,7 @@ const Login = () => {
                         -
                     </div>
                     <div onClick={(e) => loginClickHandler(e)}>
-                        Sing Up to ...
+                        Sign Up to ...
                     </div>
                 </div>
 

@@ -67,7 +67,7 @@ public class MessageController : ControllerBase
         {
             var clientIp = GetClientIp(HttpContext);
             
-            _logger.LogError($"{clientIp} try to request chat ID:{chatId} messages in range {index} but unexpected error occured: {e}");
+            _logger.LogError($"{clientIp} try to request chat ID:{chatId} messages in range {index} but unexpected error occured: {e} at:{DateTime.UtcNow}");
             
             throw;
         }

@@ -3,7 +3,6 @@ using System.Security.Claims;
 using chat_HTTP_server.Mapper;
 using chat_HTTP_server.Model;
 using chat_HTTP_server.Repository;
-using chat_HTTP_server.Repository.LogRepository;
 using chat_HTTP_server.Service.AuthModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +17,13 @@ public class AuthController : ControllerBase
 
     private readonly IUserRepository _userRepository;
 
-    private readonly ILogRepository _log;
-    public AuthController(IAuthService authService, IUserRepository userRepository, ILogRepository log)
+    private readonly ILogger<AuthController> _logger;
+    
+    public AuthController(IAuthService authService, IUserRepository userRepository, ILogger<AuthController> logger)
     {
         _authService = authService;
         _userRepository = userRepository;
-        _log = log;
+        _logger = logger;
     }
 
     [HttpPost("login")]
@@ -43,21 +43,23 @@ public class AuthController : ControllerBase
                 
                 setTokenCookie(authResult.Token, "access_token");
                 
-                var log = LogEnum.logInfo.CreateLog($"{authResult.UserName} logged in");
-                
-                await _log.AddLog(log);
+                _logger.LogInformation($"User with this ID:{authResult.Id} log into at: {DateTime.UtcNow}");
                 
                 return Ok(new AuthResponse(authResult.Email, authResult.UserName, authResult.Id));
             }
 
+            var ip = GetClientIp(HttpContext);
+            
+            _logger.LogWarning($"Client with this IP:{ip} try to log in with this email/username: {request.Name} at: {DateTime.UtcNow}");
+            
             return Unauthorized();
         }
         catch (Exception e)
         {
-            var log = LogEnum.logError.CreateLog($"login process failed: {e}");
-                
-            await _log.AddLog(log);
-
+            var clientIp = GetClientIp(HttpContext);
+            
+            _logger.LogError($"Client with this IP:{clientIp} try to log in with this email/username: {request.Name} but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            
             return StatusCode(500);
         }
     }
@@ -70,15 +72,30 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var identityRegistration = await _authService.RegisterAsync(request.Email, request.Username, request.Password, "user", request.FirstName, request.LastName);
+        var clientIp = GetClientIp(HttpContext);
 
-        if (!identityRegistration.Success)
+        try
         {
-            AddErrors(identityRegistration);
-            return BadRequest(ModelState);
-        }
+            var identityRegistration = await _authService.RegisterAsync(request.Email, request.Username, request.Password, "user", request.FirstName, request.LastName);
+
+            if (!identityRegistration.Success)
+            {
+                AddErrors(identityRegistration, clientIp);
+                return BadRequest(ModelState);
+            }
         
-        return CreatedAtAction(nameof(Register), new RegistrationResponse(identityRegistration.Email, identityRegistration.UserName));
+            _logger.LogInformation($"Client with this IP:{clientIp} successfull registered with this username: {identityRegistration.UserName} at: {DateTime.UtcNow}");
+            
+            return CreatedAtAction(nameof(Register), new RegistrationResponse(identityRegistration.Email, identityRegistration.UserName));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Client with this IP:{clientIp} try to sing up in with this email/username: {request.Name} but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            
+            return StatusCode(500);
+        }
+
+        
     }
     
     [HttpPost("logout")]
@@ -157,10 +174,12 @@ public class AuthController : ControllerBase
         
     }
     
-    private void AddErrors(AuthResult result)
+    private void AddErrors(AuthResult result, string clientIp)
     {
         foreach (var error in result.ErrorMessages)
         {
+            _logger.LogWarning($"Client with this IP:{clientIp} try to registration, but some error occured. Error: {error.Key}, {error.Value}");
+            
             ModelState.AddModelError(error.Key, error.Value);
         }
     }
@@ -174,6 +193,18 @@ public class AuthController : ControllerBase
             Expires = DateTime.UtcNow.AddDays(7)
         };
         Response.Cookies.Append(tokenName, token, cookieOptions);
+    }
+    
+    private string GetClientIp(HttpContext httpContext)
+    {
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString();
+
+        if (httpContext.Request.Headers.ContainsKey("X-Forwarded-For"))
+        {
+            ip = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        }
+
+        return ip;
     }
     
 }
