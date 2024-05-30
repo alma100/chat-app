@@ -1,4 +1,5 @@
 ﻿
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using chat_HTTP_server.Mapper;
 using chat_HTTP_server.Model;
@@ -26,7 +27,7 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("login")]
+    [HttpPost("Login")]
     public async Task<IActionResult> Login(AuthRequest request)
     {
         if (!ModelState.IsValid)
@@ -41,7 +42,7 @@ public class AuthController : ControllerBase
             if (authResult.Success)
             {
                 
-                setTokenCookie(authResult.Token, "access_token");
+                SetTokenCookie(authResult.Token, "access_token");
                 
                 _logger.LogInformation($"User with this ID:{authResult.Id} log into at: {DateTime.UtcNow}");
                 
@@ -90,7 +91,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            _logger.LogError($"Client with this IP:{clientIp} try to sing up in with this email/username: {request.Name} but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            _logger.LogError($"Client with this IP:{clientIp} try to sign up in with this username: {request.Username} but unexpected error occured: {e} at:{DateTime.UtcNow}");
             
             return StatusCode(500);
         }
@@ -98,54 +99,73 @@ public class AuthController : ControllerBase
         
     }
     
-    [HttpPost("logout")]
+    [HttpPost("Logout")]
     [Authorize]
-    public async Task<IActionResult> Logout()
+    public IActionResult Logout()
     {
-       Response.Cookies.Delete("access_token");
-
+        Response.Cookies.Delete("access_token");
+        
+        var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        _logger.LogInformation($"User Id: {userId} log out at: {DateTime.UtcNow}");
+        
         return Ok();
     }
     
     [HttpGet("UsernameValidator/{username}")]
     public IActionResult UsernameValidator(string username)
     {
+        var clientIp = GetClientIp(HttpContext);
+        
         try
         {
             var res = _userRepository.IsUsernameValid(username);
 
             if (res)
             {
+                _logger.LogInformation($"Client with IP: {clientIp} validate his {username} at: {DateTime.UtcNow}");
+                
                 return Ok();
             }
 
+            _logger.LogWarning($"Client with IP: {clientIp} try to validate his {username}, but username is used. at: {DateTime.UtcNow}");
+            
             return StatusCode(422);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            _logger.LogError($"Client whit this IP: {clientIp} try to validate his {username} but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            
             return BadRequest();
         }
     }
     
-    [HttpGet("EmailValidator/{email}")] //loggolás, ip korlátozás
+    [HttpGet("EmailValidator/{email}")]
     public IActionResult EmailValidator(string email)
     {
+        var clientIp = GetClientIp(HttpContext);
+        
         try
         {
             var res = _userRepository.IsEmailValid(email);
 
             if (res)
             {
+                _logger.LogInformation($"Client with IP: {clientIp} validate his {email} at: {DateTime.UtcNow}");
+                
                 return Ok();
             }
-
+            
+            _logger.LogWarning($"Client with IP: {clientIp} try to validate his {email}, but email is used. at: {DateTime.UtcNow}");
+            
             return StatusCode(422);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            return BadRequest();
+            
+            _logger.LogError($"Client whit this IP: {clientIp} try to validate his {email} but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            
+            return StatusCode(500);
         }
     }
     
@@ -154,22 +174,30 @@ public class AuthController : ControllerBase
     {
         try
         {
-            //var token = HttpContext.Request.Cookies["access_token"];
             var userId = HttpContext.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
             if (userId == null)
             {
+                var clientIp = GetClientIp(HttpContext);
+                
+                _logger.LogWarning($"Client with this Ip: {clientIp} try to request user data at: {DateTime.UtcNow}.");
+                
                 return Unauthorized();
             }
 
             var res = await _userRepository.GetUserById(userId);
             
+            _logger.LogInformation($"User with this ID: {userId} request his data at:{DateTime.UtcNow}");
+            
             return Ok(new AuthResponse(res.Email, res.UserName, res.Id));
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            var clientIp = GetClientIp(HttpContext);
+            
+            _logger.LogError($"Client whit this IP: {clientIp} try to request user data but unexpected error occured: {e} at:{DateTime.UtcNow}");
+            
+            return StatusCode(500);
         }
         
     }
@@ -184,7 +212,7 @@ public class AuthController : ControllerBase
         }
     }
     
-    private void setTokenCookie(string token, string tokenName)
+    private void SetTokenCookie(string token, string tokenName)
     {
        
         var cookieOptions = new CookieOptions
@@ -195,7 +223,7 @@ public class AuthController : ControllerBase
         Response.Cookies.Append(tokenName, token, cookieOptions);
     }
     
-    private string GetClientIp(HttpContext httpContext)
+    private static string GetClientIp(HttpContext httpContext)
     {
         var ip = httpContext.Connection.RemoteIpAddress?.ToString();
 

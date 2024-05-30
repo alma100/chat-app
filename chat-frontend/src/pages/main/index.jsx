@@ -5,7 +5,7 @@ const Main = () => {
     const navigate = useNavigate();
 
     const authHandler = (e) => {
-       e.target.textContent === "Login" ? navigate("/login") : navigate("/registration")
+       e.target.textContent === "Log In" ? navigate("/login") : navigate("/registration")
         
         
     }
@@ -14,8 +14,8 @@ const Main = () => {
         <>
             Asd
             <div>
-                <button onClick={(e)=> authHandler(e)}>Login</button>
-                <button onClick={(e)=> authHandler(e)}>Singin</button>
+                <button onClick={(e)=> authHandler(e)}>Log In</button>
+                <button onClick={(e)=> authHandler(e)}>Sign Up</button>
             </div>
             
         </>

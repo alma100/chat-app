@@ -19,7 +19,7 @@ const Login = () => {
     const { setProfileData } = useUserDataContext();
 
     const loginRequestFetch = (loginData) => {
-        return fetch('/api/Auth/login', {
+        return fetch('/api/Auth/Login', {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",

@@ -406,7 +406,7 @@ const Chat = () => {
     }
 
     const searchFetch = async (name) => {
-        const res = await fetch("/api/Chat/getUserByName", {
+        const res = await fetch("/api/Chat/GetUserByName", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
@@ -417,7 +417,7 @@ const Chat = () => {
     }
 
     const createChatFetch = async (data) => {
-        const res = await fetch("/api/Chat/creatChat", {
+        const res = await fetch("/api/Chat/CreatChat", {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
@@ -428,7 +428,7 @@ const Chat = () => {
     }
 
     const getAllChatFetch = () => {
-        return fetch("/api/Chat/getAllChat").then(res => res.json())
+        return fetch("/api/Chat/GetAllChat").then(res => res.json())
     }
 
 
