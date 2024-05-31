@@ -1,46 +1,44 @@
-import Minus from "../../icons/minus.png"
-import Close from "../../icons/close.png"
-import User from "../../icons/user.png"
-import Happiness from "../../icons/happiness.png"
-import Submit from "../../icons/submit.png"
+import Minus from "../../../icons/minus.png"
+import Close from "../../../icons/close.png"
+import User from "../../../icons/user.png"
+import Happiness from "../../../icons/happiness.png"
+import Submit from "../../../icons/submit.png"
 import { useEffect, useState, useRef } from "react";
 
 import Emoji from "./emoji";
 import DisplayEmoji from "./displayEmoji";
+import { useActivChatDataContex } from "../../../context/activeChatContext"
 
-const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessage, REACTIONS, setClickEmojiPicker,
-    onFocusMessage, clickEmojiPicker, bottomRef, messageInput, setMessageInput, activeChat, setActiveChat,
-    sendMessage, profileData, setPendingChat, setMessageHistory, sendJsonMessage, pendingChat, setScrollPosition,
-    scrollPosition, scrollRef, setMessageHistoryIndex, messageHistoryIndex, initialIndex, handlePrevMessage
+const ActiveChat = ({value, index, sendMessage}) => {
 
-}) => {
+    const {useStateValueObject, useStateSetObject} =useActivChatDataContex()
 
     const closeChatBox = (id) => {
-        const updatedList = activeChat.filter(number => number !== id);
-        setActiveChat(updatedList);
+        const updatedList = useStateValueObject.activeChat.filter(number => number !== id);
+        useStateSetObject.setActiveChat(updatedList);
 
-        const updatedSplitedMessage = { ...messageHistoryIndex }
+        const updatedSplitedMessage = { ...useStateValueObject.messageHistoryIndex }
         delete updatedSplitedMessage[id];
-        setMessageHistoryIndex(updatedSplitedMessage);
+        useStateSetObject.setMessageHistoryIndex(updatedSplitedMessage);
 
-        const updateScrollPosition = scrollPosition.filter(obj => obj.chatId !== id);
-        setScrollPosition(updateScrollPosition)
+        const updateScrollPosition = useStateValueObject.scrollPosition.filter(obj => obj.chatId !== id);
+        useStateSetObject.setScrollPosition(updateScrollPosition)
 
     }
 
     const sendButtonHandler = (chatId) => {
 
-        if (messageInput[chatId] !== "") {
+        if (useStateValueObject.messageInput[chatId] !== "") {
             let message = {
-                UserId: profileData.id,
-                Content: messageInput[chatId],
+                UserId: useStateValueObject.profileData.id,
+                Content: useStateValueObject.messageInput[chatId],
                 Emoji: [],
                 ChatId: chatId,
             };
 
             let input = {
                 Event: "message",
-                UserId: profileData.id,
+                UserId: useStateValueObject.profileData.id,
                 Content: null,
                 Message: message,
                 CreatedAt: new Date()
@@ -52,42 +50,41 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
     }
 
     const sendMessageToTab = (chatId) => {
-        const updatedList = activeChat.filter(number => number !== chatId);
-        setActiveChat(updatedList);
-        setPendingChat([...pendingChat, chatId]);
+        const updatedList = useStateValueObject.activeChat.filter(number => number !== chatId);
+        useStateSetObject.setActiveChat(updatedList);
+        useStateSetObject.setPendingChat([...useStateValueObject.pendingChat, chatId]);
     }
 
     const saveOrUpdateMessages = (chatId, message) => {
 
-        const updatedMessages = { ...messageInput };
+        const updatedMessages = { ...useStateValueObject.messageInput };
 
         updatedMessages[chatId] = message;
-        setMessageInput(updatedMessages);
+        useStateSetObject.setMessageInput(updatedMessages);
     }
 
     const emojiClickHandler = (messageId) => {
 
-        setClickEmojiPicker(messageId);
+        useStateSetObject.setClickEmojiPicker(messageId);
 
     }
 
     const splitMessageHistory = async (currentIndex) => {
 
-        let updatedSplitedMessage = { ...messageHistoryIndex };
+        let updatedSplitedMessage = { ...useStateValueObject.messageHistoryIndex };
 
-        if (currentIndex in messageHistoryIndex) {
+        if (currentIndex in useStateValueObject.messageHistoryIndex) {
 
-            if (updatedSplitedMessage[currentIndex] < messageHistory[currentIndex].length) {
-                let newIndex = updatedSplitedMessage[currentIndex] + initialIndex;
+            if (updatedSplitedMessage[currentIndex] < useStateValueObject.messageHistory[currentIndex].length) {
+                let newIndex = updatedSplitedMessage[currentIndex] + useStateValueObject.initialIndex;
 
                 updatedSplitedMessage[currentIndex] = newIndex;
-                setMessageHistoryIndex(updatedSplitedMessage);
+                useStateSetObject.setMessageHistoryIndex(updatedSplitedMessage);
 
             }
 
-            if (messageHistoryIndex[value] === messageHistory[value].length) {
-                console.log("kel az update")
-
+            if (useStateValueObject.messageHistoryIndex[value] === useStateValueObject.messageHistory[value].length) {
+                
                 await handlePrevMessage(value);
             }
 
@@ -95,12 +92,38 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
     }
 
+    const handlePrevMessage = async (chatId) => {
+        let nextIndex = 0;
+    
+        if (useStateValueObject.messageHistory[chatId] !== undefined) {
+            let messageInChat = "";
 
+            nextIndex = useStateValueObject.messageHistory[chatId].length;
+            let updatedMessageHistory = { ...useStateValueObject.messageHistory };
+
+            messageInChat = await getCurrentChatMessage(chatId, nextIndex);
+
+            let oldList = updatedMessageHistory[chatId]
+           
+            let newList = messageInChat[chatId].concat(oldList)
+            
+            updatedMessageHistory[chatId] = newList;
+
+            useStateSetObject.setMessageHistory(
+                updatedMessageHistory
+            )
+            
+            let res = messageInChat[chatId].length > 0 ? true : false;
+            
+            return res
+        }
+    
+        return false;
+    }
 
 
     const handleScroll = async (event, chatId) => {
 
-        console.log(event.target.scrollTop)
         let histPosition = 0;
         const { scrollTop, scrollHeight, clientHeight } = event.target;
 
@@ -121,23 +144,21 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
         }
 
-
-
         const Obj = {
             chatId: chatId,
             position: currentPosition
         }
 
-        const upgradedScrollPosition = [...scrollPosition];
+        const upgradedScrollPosition = [...useStateValueObject.scrollPosition];
 
         let chatIdInScrollPosition = upgradedScrollPosition.filter(obj => obj.chatId !== chatId);
 
-        if (chatIdInScrollPosition.length !== scrollPosition) {
+        if (chatIdInScrollPosition.length !== useStateValueObject.scrollPosition) {
 
-            setScrollPosition([...chatIdInScrollPosition, Obj])
+            useStateSetObject.setScrollPosition([...chatIdInScrollPosition, Obj])
         } else {
 
-            setScrollPosition([...upgradedScrollPosition, Obj])
+            useStateSetObject.setScrollPosition([...upgradedScrollPosition, Obj])
         }
 
     };
@@ -147,7 +168,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
             <div className="chat-box-header">
                 <div className="chat-box-header-elements">
                     {
-                        allChatData.map(obj => {
+                        useStateValueObject.allChatData.map(obj => {
                             if (obj.id == value) {
                                 return obj.usersFullName[0];
                             }
@@ -168,16 +189,16 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
             <div className="chat-box-body">
                 <div className="chat-box-overlay"
                     id={index}
-                    ref={scrollRef}
+                    ref={useStateValueObject.scrollRef}
                     onScroll={(e) => handleScroll(e, value)}>
                     {
-                        messageHistory[value].map((message, index) => {
-                            if (index > messageHistory[value].length - (1 + messageHistoryIndex[value])) {
-                                if (message.UserId === profileData.id) {
+                        useStateValueObject.messageHistory[value].map((message, index) => {
+                            if (index > useStateValueObject.messageHistory[value].length - (1 + useStateValueObject.messageHistoryIndex[value])) {
+                                if (message.UserId === useStateValueObject.profileData.id) {
                                     return <div className="chatOwnMessageWrapper"
                                         id={message.ChatId + "." + index}
-                                        onMouseEnter={() => { setOnFocusMessage(message.MessageId) }}
-                                        onMouseLeave={() => { setOnFocusMessage(null) }}>
+                                        onMouseEnter={() => { useStateSetObject.setOnFocusMessage(message.MessageId) }}
+                                        onMouseLeave={() => { useStateSetObject.setOnFocusMessage(null) }}>
                                         <div className="owenMessageContainer">
                                             <div key={message.ChatId + index}
                                                 className="chatOwnMessage">
@@ -245,14 +266,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
                                                     {
                                                         clickEmojiPicker === message.MessageId ? (
 
-                                                            <Emoji
-                                                                chatId={message.ChatId}
-                                                                messageId={message.MessageId}
-                                                                setMessageHistory={setMessageHistory}
-                                                                messageHistory={messageHistory}
-                                                                sendJsonMessage={sendJsonMessage}
-                                                                reactions={REACTIONS}
-                                                                profileData={profileData} />
+                                                            <Emoji />
 
                                                         ) : (
                                                             <></>
@@ -275,7 +289,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
 
                         }) 
                     }
-                    <div id={`${index}`} ref={bottomRef} />
+                    <div id={`${index}`} ref={useStateValueObject.bottomRef} />
                 </div>
 
             </div>
@@ -284,7 +298,7 @@ const ActiveChat = ({ index, value, allChatData, messageHistory, setOnFocusMessa
                     <input
                         onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
                         className="chat-input-field"
-                        value={messageInput[value] === undefined ? "" : messageInput[value]}
+                        value={useStateValueObject.messageInput[value] === undefined ? "" : useStateValueObject.messageInput[value]}
                     >
                     </input>
                     <div onClick={() => sendButtonHandler(value)}

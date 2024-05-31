@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import "./emoji.css"
+import "../emoji.css"
 
 const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonMessage, reactions, profileData }) => {
 
