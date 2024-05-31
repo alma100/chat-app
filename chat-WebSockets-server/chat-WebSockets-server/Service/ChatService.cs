@@ -39,7 +39,6 @@ public class ChatService : IChatService
                 messageObject = JsonSerializer.Deserialize<WebSocketObj>(message);
             }
             
-            
             if (messageObject.Event == "connection request")
             { 
                 await _webSocketManager.AddSocketToGroup(socket, messageObject.UserId);
@@ -58,7 +57,24 @@ public class ChatService : IChatService
                 
                 _logger.LogInformation($"User ID:{messageObject.UserId} joined to the server at: {DateTime.UtcNow}");
                 
-                await socket.SendAsync(initResBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                if (socket.State == WebSocketState.Open)
+                {
+                    try
+                    {
+                        await socket.SendAsync(initResBuffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
+                    catch (WebSocketException ex)
+                    {
+                        _logger.LogError($"WebSocketException during SendAsync: {ex.Message} at: {DateTime.UtcNow}");
+                        break;
+                    }
+                }
+                else
+                {
+                    var userID = _webSocketManager.RemoveSocket(socket);
+        
+                    _logger.LogWarning($"user ID: {userID}, {socket} removed");
+                }
 
             }
             else if(messageObject.Event == "message")

@@ -81,8 +81,9 @@ const Chat = () => {
         },
     ];
 
-    const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
+    const { sendMessage, lastMessage, readyState, sendJsonMessage, getWebSocket } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
+        onClose: () => console.log('WebSocket connection closed'),
         share: true,
 
         shouldReconnect: (closeEvent) => true,
@@ -90,15 +91,23 @@ const Chat = () => {
     });
 
 
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            const ws = getWebSocket();
+            if (ws) {
+                ws.close();
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [getWebSocket]);
 
 
     useEffect(() => {
-        var szelesseg = window.innerWidth;
-        var magassag = window.innerHeight;
-
-        console.log("Böngésző ablak szélessége: " + szelesseg);
-        console.log("Böngésző ablak magassága: " + magassag);
-
         if (profileData !== null) {
             let message = {
                 Event: "connection request",
