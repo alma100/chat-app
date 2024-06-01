@@ -5,17 +5,18 @@ import { Box, Grid } from "@mui/material";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import "../chat.css"
 import ActiveChat from "../component/activeChat";
-import { useActivChatDataContex } from "../../../context/activeChatContext";
+import { useChatDataContex } from "../../../context/chatContext";
 import SearchBarComponent from "../component/searchBarComponent";
 import DisplayAllChat from "../component/displayAllChatComponent";
 import PendingChat from "../component/pendingChatComponent";
+import { ActiveChatDataContex } from "../../../context/activeChatDataContext";
 
 
 const Chat = () => {
 
     const navigate = useNavigate();
 
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex()
+    const { useStateValueObject, useStateSetObject } = useChatDataContex()
 
     const WS_URL = "ws://localhost:5102/ws";
 
@@ -30,7 +31,7 @@ const Chat = () => {
     });
 
     useEffect(() => {
-       if (useStateValueObject.profileData !== null) {
+        if (useStateValueObject.profileData !== null) {
             let message = {
                 Event: "connection request",
                 UserId: useStateValueObject.profileData.id,
@@ -46,11 +47,11 @@ const Chat = () => {
 
                 //handlePrevMessage();
             }
-        } 
+        }
     }, [useStateValueObject.profileData, readyState])
 
 
-    useEffect(()=> {
+    useEffect(() => {
         if (useStateValueObject.profileData === null) {
             refreshProfilData().then(res => {
                 if (res !== undefined) {
@@ -97,7 +98,7 @@ const Chat = () => {
         }
     }
 
-    
+
 
     const isScrolledChat = (currentChatId) => {
 
@@ -280,17 +281,17 @@ const Chat = () => {
         let upgradedPedingChat = useStateValueObject.pendingChat.filter(id => id !== chatId);
 
         let messageInChat = "";
-            if (useStateValueObject.messageHistory[chatId] === undefined) {
-                let updatedMessageHistory = { ...useStateValueObject.messageHistory };
+        if (useStateValueObject.messageHistory[chatId] === undefined) {
+            let updatedMessageHistory = { ...useStateValueObject.messageHistory };
 
-                messageInChat = await getCurrentChatMessage(chatId, 0);
+            messageInChat = await getCurrentChatMessage(chatId, 0);
 
-                updatedMessageHistory[chatId] = messageInChat[chatId];
+            updatedMessageHistory[chatId] = messageInChat[chatId];
 
-                useStateSetObject.setMessageHistory(
-                    updatedMessageHistory
-                )
-            }
+            useStateSetObject.setMessageHistory(
+                updatedMessageHistory
+            )
+        }
 
         if (currentActiveChat.length >= 3) {
             let firstChatId = currentActiveChat[0];
@@ -301,7 +302,7 @@ const Chat = () => {
             upgradedPedingChat.push(firstChatId)
 
         } else {
-        
+
             useStateSetObject.setActiveChat([...currentActiveChat, chatId])
 
         }
@@ -331,7 +332,7 @@ const Chat = () => {
                                 <Grid item xs={5} ms={5} md={2}>
                                     <div className="chatGrid">
 
-                                        <DisplayAllChat messageBackToOnline={messageBackToOnline}/>
+                                        <DisplayAllChat messageBackToOnline={messageBackToOnline} />
                                     </div>
 
                                 </Grid>
@@ -341,7 +342,7 @@ const Chat = () => {
 
                             {
                                 useStateValueObject.pendingChat.map((chatId, index) => {
-                                    return <PendingChat chatId={chatId} index={index} messageBackToOnline={messageBackToOnline}/>
+                                    return <PendingChat chatId={chatId} index={index} messageBackToOnline={messageBackToOnline} />
 
                                 })
                             }
@@ -349,11 +350,15 @@ const Chat = () => {
                             {
                                 useStateValueObject.activeChat.map((value, index) => {
                                     if (index < 3) {
-                                        return <ActiveChat value={value} index={index} sendJsonMessage={sendJsonMessage} />
+                                        return <ActiveChatDataContex.Provider value={{value, index, sendJsonMessage}}>
+                                            <ActiveChat />
+                                        </ActiveChatDataContex.Provider>
                                     }
 
                                 })
                             }
+
+
                         </div>
 
                     </div>

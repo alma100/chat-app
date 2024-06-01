@@ -24,7 +24,7 @@ const useSingIn = () => {
     }
 
 
-    return {Username, setUsernameState, UsernameResult, setUsernameResultValue, UsernameInfoBox, setInfoBoxValue, UsernameInfoBox}
+    return {Username, setUsernameState, UsernameResult, setUsernameResultValue, UsernameInfoBox, setInfoBoxValue}
 }
 
 export default useSingIn;

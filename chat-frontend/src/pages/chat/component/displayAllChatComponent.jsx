@@ -1,8 +1,8 @@
-import { useActivChatDataContex } from "../../../context/activeChatContext";
+import { useChatDataContex } from "../../../context/chatContext";
 
 
 const DisplayAllChat = ({messageBackToOnline}) => {
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex();
+    const {useStateValueObject, useStateSetObject} = useChatDataContex();
 
     const chatHandler = (chatDto) => {
         console.log(chatDto.id);

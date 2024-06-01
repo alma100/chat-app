@@ -1,10 +1,13 @@
 import Minus from "../../../../icons/minus.png"
 import Close from "../../../../icons/close.png"
-import { useActivChatDataContex } from "../../../../context/activeChatContext"
+import { useChatDataContex } from "../../../../context/chatContext"
+import { useActiveChatDataContex } from "../../../../context/activeChatDataContext";
 
-const ActiveChatHeader = ({value}) => {
+const ActiveChatHeader = () => {
 
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex();
+    const {useStateValueObject, useStateSetObject} = useChatDataContex();
+
+    const {value} = useActiveChatDataContex();
 
     const closeChatBox = (id) => {
         const updatedList = useStateValueObject.activeChat.filter(number => number !== id);

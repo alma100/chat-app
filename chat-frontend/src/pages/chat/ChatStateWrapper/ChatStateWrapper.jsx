@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import Chat from "../page/chat";
-import { ActivChatDataContext } from "../../../context/activeChatContext";
+import { ChatDataContext } from "../../../context/chatContext";
 import { useUserDataContext } from "../../../context/userDataContext";
 import BossHead from "../../../icons/GaborEmoji.png"
 
@@ -86,9 +86,9 @@ const ChatStateWrapper = () => {
 
 
     return(
-        <ActivChatDataContext.Provider value={{useStateValueObject, useStateSetObject}}>
+        <ChatDataContext.Provider value={{useStateValueObject, useStateSetObject}}>
             <Chat />
-        </ActivChatDataContext.Provider>
+        </ChatDataContext.Provider>
     )
 }
 

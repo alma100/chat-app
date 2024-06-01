@@ -1,9 +1,9 @@
-import { useActivChatDataContex } from "../../../context/activeChatContext";
+import { useChatDataContex } from "../../../context/chatContext";
 
 
 const SearchBarComponent = () => {
 
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex()
+    const {useStateValueObject, useStateSetObject} = useChatDataContex()
 
     const handleSearchButtonClick = (name) => {
 

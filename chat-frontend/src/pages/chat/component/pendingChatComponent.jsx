@@ -1,9 +1,9 @@
-import { useActivChatDataContex } from "../../../context/activeChatContext";
+import { useChatDataContex } from "../../../context/chatContext";
 import Close from "../../../icons/close.png"
 
 const PendingChat = ({chatId, index, messageBackToOnline}) => {
 
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex()
+    const {useStateValueObject, useStateSetObject} = useChatDataContex()
 
     const chatMessageWarningHandler = (chatId, index) => {
         useStateSetObject.setShowCloseIcon(index);

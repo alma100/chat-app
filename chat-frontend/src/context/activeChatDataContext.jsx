@@ -1,12 +1,11 @@
 import { createContext, useContext } from "react";
 
-export const ActivChatDataContext = createContext(null);
+export const ActiveChatDataContex = createContext(null);
 
-export const useActivChatDataContex = () =>{
-    const context = useContext(ActivChatDataContext);
+export const useActiveChatDataContex = () =>{
+    const context = useContext(ActiveChatDataContex);
     if (!context) {
         throw new Error("useActiveChatDataContex must be used within a ActiveChatDataContexProvider");
       }
       return context;
 }
-

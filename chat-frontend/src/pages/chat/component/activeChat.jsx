@@ -1,50 +1,19 @@
 
 import User from "../../../icons/user.png"
 import Happiness from "../../../icons/happiness.png"
-import Submit from "../../../icons/submit.png"
-import Emoji from "./emoji";
-import DisplayEmoji from "./displayEmoji";
-import { useActivChatDataContex } from "../../../context/activeChatContext"
+import Emoji from "./activeChatComponent/emoji";
+import DisplayEmoji from "./activeChatComponent/displayEmoji";
 import ActiveChatHeader from "./activeChatComponent/activeChatHeader";
+import { useActiveChatDataContex } from "../../../context/activeChatDataContext";
+import { useChatDataContex } from "../../../context/chatContext";
+import ActiveChatInput from "./activeChatComponent/activeChatInputField";
 
-const ActiveChat = ({value, index, sendJsonMessage}) => {
+const ActiveChat = () => {
 
-    const {useStateValueObject, useStateSetObject} = useActivChatDataContex()
+    const {useStateValueObject, useStateSetObject} = useChatDataContex()
 
+    const {value, index} = useActiveChatDataContex();
     
-
-    const sendButtonHandler = (chatId) => {
-
-        if (useStateValueObject.messageInput[chatId] !== "") {
-            let message = {
-                UserId: useStateValueObject.profileData.id,
-                Content: useStateValueObject.messageInput[chatId],
-                Emoji: [],
-                ChatId: chatId,
-            };
-
-            let input = {
-                Event: "message",
-                UserId: useStateValueObject.profileData.id,
-                Content: null,
-                Message: message,
-                CreatedAt: new Date()
-            }
-            sendJsonMessage(input);
-        }
-
-        saveOrUpdateMessages(chatId, "");
-    }
-
-    
-
-    const saveOrUpdateMessages = (chatId, message) => {
-
-        const updatedMessages = { ...useStateValueObject.messageInput };
-
-        updatedMessages[chatId] = message;
-        useStateSetObject.setMessageInput(updatedMessages);
-    }
 
     const emojiClickHandler = (messageId) => {
 
@@ -149,7 +118,7 @@ const ActiveChat = ({value, index, sendJsonMessage}) => {
     return (
         <div className="chat-box" style={{ left: `calc(60vw - ${index * 350}px)` }} key={index}>
 
-            <ActiveChatHeader value={value}/>
+            <ActiveChatHeader />
 
             <div className="chat-box-body">
                 <div className="chat-box-overlay"
@@ -226,7 +195,7 @@ const ActiveChat = ({value, index, sendJsonMessage}) => {
                                                     {
                                                         useStateValueObject.clickEmojiPicker === message.MessageId ? (
 
-                                                            <Emoji  chatId={message.ChatId} messageId={message.MessageId} sendJsonMessage={sendJsonMessage}/>
+                                                            <Emoji  chatId={message.ChatId} messageId={message.MessageId}/>
 
                                                         ) : (
                                                             <></>
@@ -253,23 +222,9 @@ const ActiveChat = ({value, index, sendJsonMessage}) => {
                 </div>
 
             </div>
-            <div className="chat-input">
-                <div className="onlie-Chat-Input-Container">
-                    <input
-                        onChange={(e) => { saveOrUpdateMessages(value, e.target.value) }}
-                        className="chat-input-field"
-                        value={useStateValueObject.messageInput[value] === undefined ? "" : useStateValueObject.messageInput[value]}
-                    >
-                    </input>
-                    <div onClick={() => sendButtonHandler(value)}
-                        className="online-chat-send-Button-div">
-                        <img className="online-chat-icon" src={Submit} alt="Show password Icon" />
-                    </div>
-                </div>
-
-
-            </div>
-
+            
+            <ActiveChatInput />
+                   
         </div>
     )
 }

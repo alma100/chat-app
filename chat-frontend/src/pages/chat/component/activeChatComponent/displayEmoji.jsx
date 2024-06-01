@@ -1,10 +1,11 @@
 import { Tooltip } from "@mui/material";
 import { useEffect, useState} from "react";
-import { useActivChatDataContex } from "../../../context/activeChatContext";
+import { useChatDataContex } from "../../../../context/chatContext";
+
 
 const DisplayEmoji = ({ emojiValue }) => {
 
-    const {useStateValueObject} = useActivChatDataContex();
+    const {useStateValueObject} = useChatDataContex();
 
     const [userName, setUserName] = useState(null);
 

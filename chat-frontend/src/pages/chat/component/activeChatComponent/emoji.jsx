@@ -1,10 +1,13 @@
-import { useEffect, useState, useRef } from "react";
-import "../emoji.css"
-import { useActivChatDataContex } from "../../../context/activeChatContext";
 
-const Emoji = ({ chatId, messageId, sendJsonMessage}) => {
+import "../../emoji.css"
+import { useChatDataContex } from "../../../../context/chatContext";
+import { useActiveChatDataContex } from "../../../../context/activeChatDataContext";
 
-    const {useStateValueObject} = useActivChatDataContex();
+const Emoji = ({ chatId, messageId}) => {
+
+    const {useStateValueObject} = useChatDataContex();
+
+    const {sendJsonMessage} =useActiveChatDataContex();
 
     function includesLabel(emojiList, label) {
         return emojiList.some(emojiObj => emojiObj.EmojiName === label);
