@@ -1,28 +1,17 @@
-import Minus from "../../../icons/minus.png"
-import Close from "../../../icons/close.png"
+
 import User from "../../../icons/user.png"
 import Happiness from "../../../icons/happiness.png"
 import Submit from "../../../icons/submit.png"
 import Emoji from "./emoji";
 import DisplayEmoji from "./displayEmoji";
 import { useActivChatDataContex } from "../../../context/activeChatContext"
+import ActiveChatHeader from "./activeChatComponent/activeChatHeader";
 
 const ActiveChat = ({value, index, sendJsonMessage}) => {
 
-    const {useStateValueObject, useStateSetObject} =useActivChatDataContex()
+    const {useStateValueObject, useStateSetObject} = useActivChatDataContex()
 
-    const closeChatBox = (id) => {
-        const updatedList = useStateValueObject.activeChat.filter(number => number !== id);
-        useStateSetObject.setActiveChat(updatedList);
-
-        const updatedSplitedMessage = { ...useStateValueObject.messageHistoryIndex }
-        delete updatedSplitedMessage[id];
-        useStateSetObject.setMessageHistoryIndex(updatedSplitedMessage);
-
-        const updateScrollPosition = useStateValueObject.scrollPosition.filter(obj => obj.chatId !== id);
-        useStateSetObject.setScrollPosition(updateScrollPosition)
-
-    }
+    
 
     const sendButtonHandler = (chatId) => {
 
@@ -47,11 +36,7 @@ const ActiveChat = ({value, index, sendJsonMessage}) => {
         saveOrUpdateMessages(chatId, "");
     }
 
-    const sendMessageToTab = (chatId) => {
-        const updatedList = useStateValueObject.activeChat.filter(number => number !== chatId);
-        useStateSetObject.setActiveChat(updatedList);
-        useStateSetObject.setPendingChat([...useStateValueObject.pendingChat, chatId]);
-    }
+    
 
     const saveOrUpdateMessages = (chatId, message) => {
 
@@ -163,27 +148,9 @@ const ActiveChat = ({value, index, sendJsonMessage}) => {
 
     return (
         <div className="chat-box" style={{ left: `calc(60vw - ${index * 350}px)` }} key={index}>
-            <div className="chat-box-header">
-                <div className="chat-box-header-elements">
-                    {
-                        useStateValueObject.allChatData.map(obj => {
-                            if (obj.id == value) {
-                                return obj.usersFullName[0];
-                            }
-                        })
-                    }
-                </div>
-                <div className="chat-box-toggle">
-                    <span onClick={() => { sendMessageToTab(value) }}  //fv
-                        className="chat-box-toggle-element">
-                        <img className="onlineChatMinusIcon" src={Minus} alt="Send  tab Icon" />
-                    </span>
-                    <span onClick={() => { closeChatBox(value) }}  //fv
-                        className="chat-box-toggle-element">
-                        <img className="onlineChatCloseIcon" src={Close} alt="Close chat Icon" />
-                    </span>
-                </div>
-            </div>
+
+            <ActiveChatHeader value={value}/>
+
             <div className="chat-box-body">
                 <div className="chat-box-overlay"
                     id={index}

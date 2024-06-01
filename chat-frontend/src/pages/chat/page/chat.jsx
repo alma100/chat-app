@@ -20,7 +20,7 @@ const Chat = () => {
     const WS_URL = "ws://localhost:5102/ws";
 
 
-    const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
+    const { lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
         onClose: () => console.log('WebSocket connection closed'),
         share: true,
