@@ -7,6 +7,7 @@ import ActiveChatHeader from "./activeChatComponent/activeChatHeader";
 import { useActiveChatDataContex } from "../../../context/activeChatDataContext";
 import { useChatDataContex } from "../../../context/chatContext";
 import ActiveChatInput from "./activeChatComponent/activeChatInputField";
+import OwenMessageBuiler from "./activeChatComponent/ownMessageBuilder";
 
 const ActiveChat = () => {
 
@@ -130,35 +131,7 @@ const ActiveChat = () => {
                         useStateValueObject.messageHistory[value].map((message, index) => {
                             if (index > useStateValueObject.messageHistory[value].length - (1 + useStateValueObject.messageHistoryIndex[value])) {
                                 if (message.UserId === useStateValueObject.profileData.id) {
-                                    return <div className="chatOwnMessageWrapper"
-                                        id={message.ChatId + "." + index}
-                                        onMouseEnter={() => { useStateSetObject.setOnFocusMessage(message.MessageId) }}
-                                        onMouseLeave={() => { useStateSetObject.setOnFocusMessage(null) }}>
-                                        <div className="owenMessageContainer">
-                                            <div key={message.ChatId + index}
-                                                className="chatOwnMessage">
-                                                {message.Content}
-                                                <div className="owenChatEmoji" style={{
-                                                    visibility: message.Emoji.length === 0 ? 'hidden' : 'visible',
-                                                }}>
-                                                    {
-                                                        message.Emoji.map((value, index) => {
-                                                            if (index < 3) {
-                                                                return <DisplayEmoji emojiValue={value}/>
-                                                            }
-                                                        })
-                                                    }
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <div style={{
-                                            display: message.Emoji.length === 0 ? 'none' : 'block',
-
-                                        }}>
-                                        </div>
-
-                                    </div>
+                                    return <OwenMessageBuiler message={message} index={index}/>
                                 } else {
                                     return <div className="chatMessageWrapper"
                                         id={message.ChatId + "." + index}
@@ -224,7 +197,7 @@ const ActiveChat = () => {
             </div>
             
             <ActiveChatInput />
-                   
+
         </div>
     )
 }
