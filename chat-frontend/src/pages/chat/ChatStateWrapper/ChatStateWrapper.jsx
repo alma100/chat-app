@@ -2,10 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import Chat from "../page/chat";
 import { ActivChatDataContext } from "../../../context/activeChatContext";
 import { useUserDataContext } from "../../../context/userDataContext";
+import BossHead from "../../../icons/GaborEmoji.png"
 
 const ChatStateWrapper = () => {
 
-    const {profileData, setProfileData} = useUserDataContext()
+    const {profileData, setProfileData} = useUserDataContext();
+
     const [searchFieldValue, setSearchFieldValue] = useState(null);
     const [searchFetchRes, setSearchFetchRes] = useState(null);
     const [searchFieldError, setSearchFieldError] = useState(null); //searchField erro handling!!
@@ -38,10 +40,40 @@ const ChatStateWrapper = () => {
 
     const scrollRef = useRef(null);
 
+    const REACTIONS = [
+        {
+            emoji: "😂",
+            label: "joy",
+        },
+        {
+            emoji: "😍",
+            label: "love",
+        },
+        {
+            emoji: "😮",
+            label: "wow",
+        },
+        {
+            emoji:  <img style={{
+                width: '20px',
+                height: '20px',
+            }} src={BossHead} alt="Boss head Icon" />,
+            label: "yay",
+        },
+        {
+            emoji: "👍",
+            label: "up",
+        },
+        {
+            emoji: "👎",
+            label: "down",
+        },
+    ];
+
     const useStateValueObject = {
         searchFieldValue, searchFetchRes, activeChat, pendingChat, onFocusMessage, clickEmojiPicker, allChatData, 
         messageInput, messageHistory, messageHistoryIndex, showCloseIcon, bottomRefe, scrollPosition, scrollRefe, profileData,
-        initialIndex, bottomRef, scrollRef
+        initialIndex, bottomRef, scrollRef, REACTIONS
     }
 
     const useStateSetObject = {

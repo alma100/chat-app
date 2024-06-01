@@ -3,13 +3,11 @@ import Close from "../../../icons/close.png"
 import User from "../../../icons/user.png"
 import Happiness from "../../../icons/happiness.png"
 import Submit from "../../../icons/submit.png"
-import { useEffect, useState, useRef } from "react";
-
 import Emoji from "./emoji";
 import DisplayEmoji from "./displayEmoji";
 import { useActivChatDataContex } from "../../../context/activeChatContext"
 
-const ActiveChat = ({value, index, sendMessage}) => {
+const ActiveChat = ({value, index, sendJsonMessage}) => {
 
     const {useStateValueObject, useStateSetObject} =useActivChatDataContex()
 
@@ -43,7 +41,7 @@ const ActiveChat = ({value, index, sendMessage}) => {
                 Message: message,
                 CreatedAt: new Date()
             }
-            sendMessage(JSON.stringify(input));
+            sendJsonMessage(input);
         }
 
         saveOrUpdateMessages(chatId, "");
@@ -190,7 +188,8 @@ const ActiveChat = ({value, index, sendMessage}) => {
                 <div className="chat-box-overlay"
                     id={index}
                     ref={useStateValueObject.scrollRef}
-                    onScroll={(e) => handleScroll(e, value)}>
+                    onScroll={(e) => handleScroll(e, value)}
+                    >
                     {
                         useStateValueObject.messageHistory[value].map((message, index) => {
                             if (index > useStateValueObject.messageHistory[value].length - (1 + useStateValueObject.messageHistoryIndex[value])) {
@@ -209,10 +208,7 @@ const ActiveChat = ({value, index, sendMessage}) => {
                                                     {
                                                         message.Emoji.map((value, index) => {
                                                             if (index < 3) {
-                                                                return <DisplayEmoji
-                                                                    emojiValue={value}
-                                                                    reactions={REACTIONS}
-                                                                />
+                                                                return <DisplayEmoji emojiValue={value}/>
                                                             }
                                                         })
                                                     }
@@ -230,8 +226,8 @@ const ActiveChat = ({value, index, sendMessage}) => {
                                 } else {
                                     return <div className="chatMessageWrapper"
                                         id={message.ChatId + "." + index}
-                                        onMouseEnter={() => { setOnFocusMessage(message.MessageId) }}
-                                        onMouseLeave={() => { setOnFocusMessage(null), setClickEmojiPicker(null) }}>
+                                        onMouseEnter={() => { useStateSetObject.setOnFocusMessage(message.MessageId) }}
+                                        onMouseLeave={() => { useStateSetObject.setOnFocusMessage(null), useStateSetObject.setClickEmojiPicker(null) }}>
                                         <div className="messageContentContainer">
 
                                             <img className="chatuserIcon" src={User} alt="chat user Icon" />
@@ -246,10 +242,7 @@ const ActiveChat = ({value, index, sendMessage}) => {
                                                         {
                                                             message.Emoji.map((value, index) => {
                                                                 if (index < 3) {
-                                                                    return <DisplayEmoji
-                                                                        emojiValue={value}
-                                                                        reactions={REACTIONS}
-                                                                    />
+                                                                    return <DisplayEmoji emojiValue={value}/>
                                                                 }
                                                             })
                                                         }
@@ -260,13 +253,13 @@ const ActiveChat = ({value, index, sendMessage}) => {
 
                                                 <div className="addEmoji"
                                                     style={{
-                                                        visibility: onFocusMessage === message.MessageId ? 'visible' : 'hidden',
+                                                        visibility: useStateValueObject.onFocusMessage === message.MessageId ? 'visible' : 'hidden',
                                                     }}
                                                     onClick={() => { emojiClickHandler(message.MessageId) }}>
                                                     {
-                                                        clickEmojiPicker === message.MessageId ? (
+                                                        useStateValueObject.clickEmojiPicker === message.MessageId ? (
 
-                                                            <Emoji />
+                                                            <Emoji  chatId={message.ChatId} messageId={message.MessageId} sendJsonMessage={sendJsonMessage}/>
 
                                                         ) : (
                                                             <></>

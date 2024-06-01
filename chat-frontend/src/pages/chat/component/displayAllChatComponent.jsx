@@ -53,7 +53,7 @@ const DisplayAllChat = ({messageBackToOnline}) => {
                 {
                     useStateValueObject.allChatData && useStateValueObject.allChatData.map((value, index) => {
                         return <div className="allChatContentDiv"
-                            onClick={() => { chatHandler(value) }}>{value.usersFullName[0]}</div>
+                            onClick={() => { chatHandler(value) }} key={`allChat${index}`}>{value.usersFullName[0]}</div>
                     })
                 }
             </div>

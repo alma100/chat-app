@@ -4,15 +4,11 @@ import Navbar from "../../Navbar/navbar";
 import { Box, Grid } from "@mui/material";
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import "../chat.css"
-
-import Close from "../../../icons/close.png"
-import BossHead from "../../../icons/GaborEmoji.png"
-
-
 import ActiveChat from "../component/activeChat";
 import { useActivChatDataContex } from "../../../context/activeChatContext";
 import SearchBarComponent from "../component/searchBarComponent";
 import DisplayAllChat from "../component/displayAllChatComponent";
+import PendingChat from "../component/pendingChatComponent";
 
 
 const Chat = () => {
@@ -23,35 +19,6 @@ const Chat = () => {
 
     const WS_URL = "ws://localhost:5102/ws";
 
-    const REACTIONS = [
-        {
-            emoji: "😂",
-            label: "joy",
-        },
-        {
-            emoji: "😍",
-            label: "love",
-        },
-        {
-            emoji: "😮",
-            label: "wow",
-        },
-        {
-            emoji:  <img style={{
-                width: '20px',
-                height: '20px',
-            }} src={BossHead} alt="Boss head Icon" />,
-            label: "yay",
-        },
-        {
-            emoji: "👍",
-            label: "up",
-        },
-        {
-            emoji: "👎",
-            label: "down",
-        },
-    ];
 
     const { sendMessage, lastMessage, readyState, sendJsonMessage } = useWebSocket(WS_URL, {
         onOpen: () => console.log('opened'),
@@ -306,12 +273,6 @@ const Chat = () => {
     }
 
 
-    
-    
-    
-
-
-   
     //-------------- onlineChat methods --------------
 
     const messageBackToOnline = async (chatId) => {
@@ -349,24 +310,6 @@ const Chat = () => {
         useStateSetObject.setShowCloseIcon(null);
     }
 
-    const closeMessageInTab = (chatId, e) => {
-        e.stopPropagation();  //prevent to trigger the parrent div onClick action.
-        let upgradedPedingChat = useStateValueObject.pendingChat.filter(id => id !== chatId);
-        useStateSetObject.setPendingChat(upgradedPedingChat);
-        useStateSetObject.setShowCloseIcon(null);
-    }
-
-
-
-
-    // --------------- Warning methods ----------------------
-
-    const chatMessageWarningHandler = (chatId, index) => {
-        useStateSetObject.setShowCloseIcon(index);
-
-    }
-
-    
 
     return (
         <>
@@ -398,52 +341,7 @@ const Chat = () => {
 
                             {
                                 useStateValueObject.pendingChat.map((chatId, index) => {
-                                    return <>
-                                        <div className="pending-chat-container" style={{ bottom: `calc(10px + ${index * 90}px)` }}
-                                            onClick={() => messageBackToOnline(chatId)}
-                                            key={index}
-                                            onMouseEnter={() => chatMessageWarningHandler(chatId, index)}
-                                            onMouseLeave={() => useStateSetObject.setShowCloseIcon(null)}>
-
-                                            <div id={`closeTabChat${index}`}
-                                                style={{
-                                                    position: 'relative',
-                                                    bottom: '5px',
-                                                    left: '40px',
-                                                    displey: 'flex',
-                                                    justifyContent: 'center',
-                                                    visibility:  useStateValueObject.showCloseIcon === index ? 'visible' : 'hidden',
-                                                    width: '20px',
-                                                    height: '20px',
-                                                    backgroundColor: 'rgb(224, 222, 222)',
-                                                    alignItems: 'center',
-                                                    borderRadius: '50px',
-                                                }}
-                                                onClick={(e) => { closeMessageInTab(chatId, e) }}>
-                                                <img style={{
-                                                    width: '13px',
-                                                    height: '13px',
-                                                }} src={Close} alt="Close chat tab Icon" />
-                                            </div>
-                                            {chatId}
-                                        </div>
-                                        <div id={`messageTabChat${index}`}
-                                            style={{
-                                                position: 'absolute',
-                                                bottom: `calc(15px + ${index * 90}px)`,
-                                                right: '110px',
-                                                displey: 'flex',
-                                                visibility:  useStateValueObject.showCloseIcon === index ? 'visible' : 'hidden',
-                                                width: '200px',
-                                                height: '50px',
-                                                backgroundColor: 'rgb(224, 222, 222)',
-                                                alignItems: 'center',
-                                                borderRadius: '10px',
-                                                padding: '5px'
-                                            }}>
-                                            Last message content...
-                                        </div>
-                                    </>
+                                    return <PendingChat chatId={chatId} index={index} messageBackToOnline={messageBackToOnline}/>
 
                                 })
                             }
@@ -451,7 +349,7 @@ const Chat = () => {
                             {
                                 useStateValueObject.activeChat.map((value, index) => {
                                     if (index < 3) {
-                                        return <ActiveChat value={value} index={index} sendMessage={sendMessage}/>
+                                        return <ActiveChat value={value} index={index} sendJsonMessage={sendJsonMessage} />
                                     }
 
                                 })
