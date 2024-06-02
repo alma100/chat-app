@@ -100,16 +100,7 @@ const Chat = () => {
 
 
 
-    const isScrolledChat = (currentChatId) => {
-
-        let isScrolled = useStateValueObject.scrollPosition.filter(obj => obj.chatId === currentChatId);
-
-        if (isScrolled.length === 0 || isScrolled[0].position === true) {
-            return true;
-        }
-
-        return false;
-    }
+    
 
     const scrollBottom = (currentChatId) => {
         setTimeout(() => {
@@ -130,70 +121,96 @@ const Chat = () => {
 
         if (useStateValueObject.bottomRefe.length < useStateValueObject.activeChat.length) {
 
-
             let currentChatId = useStateValueObject.activeChat[useStateValueObject.activeChat.length - 1]
 
-            useStateSetObject.setScrollRef([...useStateValueObject.scrollRefe, useStateValueObject.scrollRef.current])
-            useStateSetObject.setBottomRef([...useStateValueObject.bottomRefe, useStateValueObject.bottomRef.current]);
+            addNewReferencToReferencList(useStateValueObject.scrollRefe, useStateValueObject.scrollRef.current,
+                useStateValueObject.bottomRefe, useStateValueObject.bottomRef.current);
 
-            if (isScrolledChat(currentChatId)) {
-                useStateValueObject.bottomRef.current.scrollIntoView();
-            } else {
-                let index = -1;
-
-                useStateValueObject.scrollPosition.forEach((obj, i) => {
-                    if (obj.chatId === currentChatId) {
-                        index = i
-                    }
-                })
-
-                useStateValueObject.scrollRef.current.scrollTop = useStateValueObject.scrollPosition[index].position;
-            }
+                setNewChatSlotRef(currentChatId, useStateValueObject.scrollPosition, useStateValueObject.bottomRef);
 
         } else if (useStateValueObject.bottomRefe.length > useStateValueObject.activeChat.length) {
-            let upgradeBottomRef = useStateValueObject.bottomRefe.slice(0, -1);
-            let upgradeScrollRef = useStateValueObject.scrollRefe.slice(0, -1);
-            useStateSetObject.setScrollRef(upgradeScrollRef);
-            useStateSetObject.setBottomRef(upgradeBottomRef);
+
+            let newBottomRef = removeInvalidBottomReference(useStateValueObject.bottomRefe);
+            let newScrollRef = removeInvalidScrollReference(useStateValueObject.scrollRefe);
 
             useStateValueObject.activeChat.forEach((chatId, slotIndex) => {
-
-                let isScrolled = false;
-                let index = 0
-                useStateValueObject.scrollPosition.forEach((scrollObj, i) => {
-                    if (chatId === scrollObj.chatId) {
-                        isScrolled = true;
-                        index = i
-                    }
-                })
-
-                if (isScrolled && useStateValueObject.scrollPosition[index].position !== true) {
-                    upgradeScrollRef[slotIndex].scrollTop = useStateValueObject.scrollPosition[index].position;
-                } else {
-                    upgradeBottomRef[slotIndex].scrollIntoView();
-                }
-
+                setChatSlotRefenrece(chatId, slotIndex, newBottomRef, newScrollRef)
             })
 
         } else {
+
             useStateValueObject.activeChat.forEach((chatId, slotIndex) => {
-                let isScrolled = false;
-                let index = 0
-                useStateValueObject.scrollPosition.forEach((scrollObj, i) => {
-                    if (chatId === scrollObj.chatId) {
-                        isScrolled = true;
-                        index = i
-                    }
-                })
+                setChatSlotRefenrece(chatId, slotIndex, useStateValueObject.bottomRefe, useStateValueObject.scrollRefe );
 
+            })
+        }
+    }
 
-                if (isScrolled && useStateValueObject.scrollPosition[index].position !== true) {
-                    useStateValueObject.scrollRefe[slotIndex].scrollTop = scrollPosition[index].position;
-                } else {
-                    useStateValueObject.bottomRefe[slotIndex].scrollIntoView();
+    const isScrolledChat = (currentChatId) => {
+
+        let isScrolled = useStateValueObject.scrollPosition.filter(obj => obj.chatId === currentChatId);
+
+        if (isScrolled.length === 0 || isScrolled[0].position === true) {
+            return true;
+        }
+
+        return false;
+    }
+
+    const addNewReferencToReferencList = (scrollRefList, newScrollRef, bottomRefList, newBottomRef) => {
+
+        useStateSetObject.setScrollRef([...scrollRefList, newScrollRef])
+        useStateSetObject.setBottomRef([...bottomRefList, newBottomRef]);
+
+    }
+
+    const setNewChatSlotRef = (currentChatId, prevScrollPosition, newBottomRef) => {
+
+        if (isScrolledChat(currentChatId)) {
+            newBottomRef.current.scrollIntoView();
+        } else {
+            let index = -1;
+
+            useStateValueObject.scrollPosition.forEach((obj, i) => {
+                if (obj.chatId === currentChatId) {
+                    index = i
                 }
             })
 
+            useStateValueObject.scrollRef.current.scrollTop = prevScrollPosition[index].position;
+        }
+    }
+
+    const removeInvalidBottomReference = (bottomRefList) => {
+        let upgradeBottomRef = bottomRefList.slice(0, -1);
+
+        useStateSetObject.setBottomRef(upgradeBottomRef);
+
+        return upgradeBottomRef;
+    }
+
+    const removeInvalidScrollReference = (scrollRefList) => {
+        let upgradeScrollRef = scrollRefList.slice(0, -1);
+
+        useStateSetObject.setScrollRef(upgradeScrollRef);
+
+        return upgradeScrollRef;
+    }
+
+    const setChatSlotRefenrece = (chatId, slotIndex, bottomRef, scrollRef) => {
+        let isScrolled = false;
+        let index = 0
+        useStateValueObject.scrollPosition.forEach((scrollObj, i) => {
+            if (chatId === scrollObj.chatId) {
+                isScrolled = true;
+                index = i
+            }
+        })
+
+        if (isScrolled && useStateValueObject.scrollPosition[index].position !== true) {
+            scrollRef[slotIndex].scrollTop = useStateValueObject.scrollPosition[index].position;
+        } else {
+            bottomRef[slotIndex].scrollIntoView();
         }
     }
 
@@ -350,7 +367,7 @@ const Chat = () => {
                             {
                                 useStateValueObject.activeChat.map((value, index) => {
                                     if (index < 3) {
-                                        return <ActiveChatDataContex.Provider value={{value, index, sendJsonMessage}}>
+                                        return <ActiveChatDataContex.Provider value={{ value, index, sendJsonMessage }}>
                                             <ActiveChat />
                                         </ActiveChatDataContex.Provider>
                                     }
