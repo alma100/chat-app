@@ -44,6 +44,7 @@ builder.Services.AddSwaggerGen(option =>
     
 });
 builder.Logging.ClearProviders();
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 builder.Logging.AddConsole();
 
 AddDbContext();

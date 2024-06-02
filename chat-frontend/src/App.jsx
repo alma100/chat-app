@@ -5,8 +5,9 @@ import NotFound from './pages/NotFound/NotFound'
 import Index from './pages/main/index.jsx'
 import Login from './pages/login/login.jsx';
 import Register from './pages/register/register.jsx';
-import Chat from './pages/chat/chat.jsx';
+import Chat from './pages/chat/page/chat.jsx';
 import { UserDataContext } from './context/userDataContext.jsx';
+import ChatStateWrapper from './pages/chat/ChatStateWrapper/ChatStateWrapper.jsx';
 
 function App() {
 
@@ -25,7 +26,7 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login/>} />
               <Route path="/registration" element={<Register />} />
-              <Route path="/chat" element={<Chat />} />
+              <Route path="/chat" element={<ChatStateWrapper />} />
             </Routes>
 
           </div>

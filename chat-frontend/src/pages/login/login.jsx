@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import Eye from "../../icons/eye.png"
 import Hide from "../../icons/hide.png"
 import "./login.css"
-import { UserDataContext, useUserDataContext } from "../../context/userDataContext";
+import { useUserDataContext } from "../../context/userDataContext";
 
 
 const Login = () => {

@@ -1,27 +1,27 @@
-import { useEffect, useState, useRef } from "react";
-import "./emoji.css"
 
-const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonMessage, reactions, profileData }) => {
+import "../../emoji.css"
+import { useChatDataContex } from "../../../../context/chatContext";
+import { useActiveChatDataContex } from "../../../../context/activeChatDataContext";
 
+const Emoji = ({ chatId, messageId}) => {
+
+    const {useStateValueObject} = useChatDataContex();
+
+    const {sendJsonMessage} =useActiveChatDataContex();
 
     function includesLabel(emojiList, label) {
         return emojiList.some(emojiObj => emojiObj.EmojiName === label);
     }
 
     const emojiPicker = (value, chatId, messageId) => {
-        console.log(value.emoji)
         
-        let currentMessage = messageHistory[chatId].find(m => m.MessageId === messageId);
+        let currentMessage = useStateValueObject.messageHistory[chatId].find(m => m.MessageId === messageId);
 
         let input = {};
 
-        console.log(messageHistory[chatId])
-        console.log(messageId)
-        console.log(currentMessage)
-
         let message = {
             MessageId: messageId,
-            UserId: profileData.id,
+            UserId: useStateValueObject.profileData.id,
             Content: currentMessage.Content,
             Emoji: [],
             ChatId: chatId,
@@ -37,7 +37,7 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
 
             input = {
                 Event: "remove emoji",
-                UserId: profileData.id,
+                UserId: useStateValueObject.profileData.id,
                 Content: null,
                 Message: message,
                 CreatedAt: new Date()
@@ -47,7 +47,7 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
 
             let emojiObj = {
                 EmojiName: value.label,
-                UserId: profileData.id,
+                UserId: useStateValueObject.profileData.id,
                 MessageId: messageId
             }
 
@@ -57,14 +57,13 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
 
             input = {
                 Event: "add emoji",
-                UserId: profileData.id,
+                UserId: useStateValueObject.profileData.id,
                 Content: null,
                 Message: message,
                 CreatedAt: new Date()
             }
         }
 
-        console.log(input)
         sendJsonMessage(input);
     }
 
@@ -73,8 +72,8 @@ const Emoji = ({ chatId, messageId, messageHistory, setMessageHistory, sendJsonM
         <>
             <div className="emojiContextContainer">
                 {
-                    reactions.map((value, index) => {
-                        return <span onClick={() => { emojiPicker(value, chatId, messageId) }}>
+                    useStateValueObject.REACTIONS.map((value, index) => {
+                        return <span onClick={() => { emojiPicker(value, chatId, messageId) }} key={`emojiContextElem${index}`}>
                             {value.emoji}
                         </span>
                     })

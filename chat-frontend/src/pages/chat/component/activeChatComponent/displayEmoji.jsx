@@ -1,7 +1,11 @@
 import { Tooltip } from "@mui/material";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState} from "react";
+import { useChatDataContex } from "../../../../context/chatContext";
 
-const DisplayEmoji = ({ emojiValue, reactions }) => {
+
+const DisplayEmoji = ({ emojiValue }) => {
+
+    const {useStateValueObject} = useChatDataContex();
 
     const [userName, setUserName] = useState(null);
 
@@ -25,7 +29,7 @@ const DisplayEmoji = ({ emojiValue, reactions }) => {
     }
 
     const emojiByLabel = (label) => {
-        const reaction = reactions.find(reaction => reaction.label === label);
+        const reaction = useStateValueObject.REACTIONS.find(reaction => reaction.label === label);
         return reaction ? reaction.emoji : null;
     };
 
