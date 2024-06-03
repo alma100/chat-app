@@ -16,9 +16,9 @@ public class ChatService : IChatService
 
     private readonly IWebSocketManager _webSocketManager;
 
-    private readonly ILogger<IChatService> _logger;
+    private readonly ILogger<ChatService> _logger;
 
-    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository, IWebSocketManager webSocketManager, ILogger<IChatService> logger)
+    public ChatService(IMessageRepository messageRepository, IUserRepository userRepository, IWebSocketManager webSocketManager, ILogger<ChatService> logger)
     {
         _messageRepository = messageRepository;
         _userRepository = userRepository;

@@ -11,8 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using WebSocketManager = chat_WebSockets_server.Service.WebSocketManager;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -20,6 +19,11 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
+
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
+builder.Logging.AddConsole();
 
 AddDbContext();
 AddServie();
