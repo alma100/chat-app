@@ -1,11 +1,11 @@
-import { useState } from "react"
-import Eye from "../../icons/eye.png"
-import Hide from "../../icons/hide.png"
 
-const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfoBox,
-    setPasswordResult, setPassword, setPasswordConfirm, PasswordConfirmValue,
-    setPasswordVisible,
-}) => {
+import { useRegContext } from "../../../context/registerContext"
+import Eye from "../../../icons/eye.png"
+import Hide from "../../../icons/hide.png"
+
+const PasswordInput = () => {
+
+    const {regUseStateValueObj, regUseStateSetObj} = useRegContext();
 
     const passwordValidator = (input) => {
         let localPassRes = 0;
@@ -13,17 +13,17 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
 
             if (isPasswordValidChars(input)) {
                 localPassRes++;
-                setPasswordResult(true);
+                regUseStateSetObj.setPasswordResult(true);
             } else {
-                setPasswordResult(false);
+                regUseStateSetObj.setPasswordResult(false);
             }
         }
-        setPassword(input);
+        regUseStateSetObj.setPassword(input);
 
-        if (input !== PasswordConfirmValue) {
-            setPasswordConfirm(false);
-        } else if (input === PasswordConfirmValue && localPassRes === 1) {
-            setPasswordConfirm(true);
+        if (input !== regUseStateValueObj.PasswordConfirmValue) {
+            regUseStateSetObj.setPasswordConfirm(false);
+        } else if (input === regUseStateValueObj.PasswordConfirmValue && localPassRes === 1) {
+            regUseStateSetObj.setPasswordConfirm(true);
         }
         localPassRes = 0;
     }
@@ -33,13 +33,13 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
             return false;
         }
         if (password === "") {
-            setPasswordResult(false);
+            regUseStateSetObj.setPasswordResult(false);
             return false;
         } else if (password.length < 2) {  //for demo
-            setPasswordResult(false);
+            regUseStateSetObj.setPasswordResult(false);
             return false;
         } else if (password.length > 30) {
-            setPasswordResult(false);
+            regUseStateSetObj.setPasswordResult(false);
             return false;
         } else {
             return true;
@@ -60,14 +60,14 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
     }
 
     const togglePasswordVisibility = () => {
-        setPasswordVisible(!passwordVisible);
+        regUseStateSetObj.setPasswordVisible(!regUseStateValueObj.PasswordVisible);
     };
 
     return (
         <>
             <div className="registrationPasswordContainer">
-                <div className={PasswordResult === null ? "registrationCheckNull" :
-                    PasswordResult === true ? "registrationCheckTrue" :
+                <div className={regUseStateValueObj.PasswordResult === null ? "registrationCheckNull" :
+                    regUseStateValueObj.PasswordResult === true ? "registrationCheckTrue" :
                         "registrationCheckFalse"
                 }>
                     <input type={passwordVisible ? "text" : "password"}
@@ -78,16 +78,16 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
                         defaultValue={Password !== null ? Password : ""}>
                     </input>
                     {
-                        PasswordResult === true ? <span>✔</span> :
-                            PasswordResult === null ? <span></span> :
+                        regUseStateValueObj.PasswordResult === true ? <span>✔</span> :
+                        regUseStateValueObj.PasswordResult === null ? <span></span> :
                                 <span>❗</span>
                     }
 
                     {
-                        Password && (
+                        regUseStateValueObj.Password && (
                             <span onClick={togglePasswordVisibility}
                             >
-                                {passwordVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
+                                {regUseStateValueObj.PasswordVisible ? <img className="showIcon" src={Hide} alt="Hide password Icon" /> :
                                     <img className="showIcon" src={Eye} alt="Show password Icon" />}
                             </span>
                         )
@@ -96,14 +96,14 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
                 </div>
 
                 <div id="regPassInputContainer" style={{
-                    visibility: PasswordResult === false ? 'visible' : 'hidden',
+                    visibility: regUseStateValueObj.PasswordResult === false ? 'visible' : 'hidden',
                 }}>
                     <div id="regPassInputWrapper" style={{
-                        visibility: PasswordResult === false ? 'visible' : 'hidden',
+                        visibility: regUseStateValueObj.PasswordResult === false ? 'visible' : 'hidden',
                     }}>
                         Password must be minimum 6 charcter long and contains special, number, uppercase and lowercase character.
                         <div id="passInputTriangle" sstyle={{
-                            visibility: PasswordResult === false ? 'visible' : 'hidden',
+                            visibility: regUseStateValueObj.PasswordResult === false ? 'visible' : 'hidden',
                         }}>
 
                         </div>
@@ -113,7 +113,7 @@ const PasswordInput = ({ PasswordResult, Password, passwordVisible, PasswordInfo
             </div>
 
             <div id="registerPasswordInfoBox">
-                {PasswordInfoBox !== null ? <span>{PasswordInfoBox}</span> : <></>}
+                {regUseStateValueObj.PasswordInfoBox !== null ? <span>{regUseStateValueObj.PasswordInfoBox}</span> : <></>}
             </div>
         </>
     )

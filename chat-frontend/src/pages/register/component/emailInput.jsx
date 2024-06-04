@@ -1,4 +1,9 @@
-const EmailInput = ({EmailResult, Email, EmailInfoBox, setEmailResult, setEmail}) => {
+import { useRegContext } from "../../../context/registerContext";
+
+const EmailInput = () => {
+
+    const {regUseStateValueObj, regUseStateSetObj} = useRegContext();
+
 
     const isEmailValidFetch = async (email) => {
 
@@ -20,18 +25,18 @@ const EmailInput = ({EmailResult, Email, EmailInfoBox, setEmailResult, setEmail}
                 const res = await isEmailUsed(input);
 
                 if (!res) {
-                    setEmailResult(true);
-                    setEmail(input);
+                    regUseStateSetObj.setEmailResult(true);
+                    regUseStateSetObj.setEmail(input);
                 } else {
-                    setEmailResult(false);
+                    regUseStateSetObj.setEmailResult(false);
                 }
 
             } else {
-                setEmailResult("charNotValid");
+                regUseStateSetObj.setEmailResult("charNotValid");
             }
 
         } else {
-            setEmailResult("")
+            regUseStateSetObj.setEmailResult("")
         }
 
     }
@@ -76,28 +81,28 @@ const EmailInput = ({EmailResult, Email, EmailInfoBox, setEmailResult, setEmail}
 
     return (
         <>
-            <div className={EmailResult === null ? "registrationCheckNull" :
-                EmailResult === true ? "registrationCheckTrue" :
+            <div className={regUseStateValueObj.EmailResult === null ? "registrationCheckNull" :
+                regUseStateValueObj.EmailResult === true ? "registrationCheckTrue" :
                     "registrationCheckFalse"
             }>
                 <input type="text" onBlur={(e) => emailValidator(e)}
                     placeholder="Email"
                     className="registrationInput"
-                    defaultValue={Email !== null ? Email : ""}>
+                    defaultValue={regUseStateValueObj.Email !== null ? regUseStateValueObj.Email : ""}>
                 </input>
                 {
-                    EmailResult === true ? <span>✔</span> :
-                        EmailResult === null ? <span></span> :
+                    regUseStateValueObj.EmailResult === true ? <span>✔</span> :
+                    regUseStateValueObj.EmailResult === null ? <span></span> :
                             <span>❗</span>
                 }
             </div>
             <div id="emailInfobox">
                 {
-                    EmailResult === null ? <span>Please select email!</span> :
-                        EmailResult === true ? <span>Valid email</span> :
-                            EmailResult === "charNotValid" ? <span>Invalid email format!</span> :
-                                EmailResult === "" ? <span>Please select email!</span> :
-                                    EmailInfoBox !== null ? <span>{EmailInfoBox}</span> :
+                    regUseStateValueObj.EmailResult === null ? <span>Please select email!</span> :
+                    regUseStateValueObj.EmailResult === true ? <span>Valid email</span> :
+                    regUseStateValueObj.EmailResult === "charNotValid" ? <span>Invalid email format!</span> :
+                    regUseStateValueObj.EmailResult === "" ? <span>Please select email!</span> :
+                    regUseStateValueObj.EmailInfoBox !== null ? <span>{EmailInfoBox}</span> :
                                         <span>The email is already in use!</span>
                 }
 

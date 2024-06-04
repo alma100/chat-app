@@ -1,28 +1,25 @@
 import { useEffect, useState } from "react";
-import "./register.css";
-import useSingIn from "./regHook/useSingIn";
-import { useTestContext } from "../../context/testContext";
+import "../register.css";
+import { useRegContext } from "../../../context/registerContext";
 
-const RegistrationProcessBar = ({ PasswordResult, EmailResult,
-    PasswordConfirm, FirstnameResult, LastnameResult }) => {
 
-    const {Username, setUsernameState, UsernameResult, setUsernameResultValue, setInfoBoxValue} = useTestContext()
+const RegistrationProcessBar = () => {
+
+    const {regUseStateValueObj} = useRegContext();
 
     const [resultCount, setResultount] = useState(0)
 
     useEffect(() => {
-        console.log("lefut1")
-        console.log(UsernameResult)
-        console.log(Username)
         calculateProcessPogres()
 
-    }, [PasswordResult, EmailResult, UsernameResult,
-        PasswordConfirm, FirstnameResult, LastnameResult])
+    }, [regUseStateValueObj.PasswordResult, regUseStateValueObj.EmailResult, regUseStateValueObj.UsernameResult,
+        regUseStateValueObj.PasswordConfirm, regUseStateValueObj.FirstnameResult, regUseStateValueObj.LastnameResult])
 
     
 
     const calculateProcessPogres = () => {
-        let resultList = [PasswordResult, EmailResult, UsernameResult, PasswordConfirm, FirstnameResult, LastnameResult];
+        let resultList = [regUseStateValueObj.PasswordResult, regUseStateValueObj.EmailResult, regUseStateValueObj.UsernameResult,
+             regUseStateValueObj.PasswordConfirm, regUseStateValueObj.FirstnameResult, regUseStateValueObj.LastnameResult];
         let localResult = 0
         resultList.forEach(res => {
             if (res === true) {

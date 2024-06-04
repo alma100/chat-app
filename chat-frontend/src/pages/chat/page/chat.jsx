@@ -65,7 +65,6 @@ const Chat = () => {
     useEffect(() => {
         if (lastMessage !== null) {
             const messageObject = JSON.parse(lastMessage.data);
-            console.log(messageObject);
             if (messageObject.Event !== "connection request") {
                 handleIncomingMessage(messageObject.Message, messageObject.Event);
                 incrementMessageHistoryIndex(messageObject.Message.ChatId);
@@ -249,15 +248,12 @@ const Chat = () => {
     const handleIncomingMessageEvent = (messageObj) => {
         if (messageObj.ChatId in useStateValueObject.messageHistory) {
             if (!messageIsExist(useStateValueObject.messageHistory[messageObj.ChatId], messageObj.MessageId)) {
-                console.log("incomingIf")
                 useStateSetObject.setMessageHistory({
                     ...useStateValueObject.messageHistory,
                     [messageObj.ChatId]: [...useStateValueObject.messageHistory[messageObj.ChatId], messageObj]
                 });
             }
-
         } else {
-            console.log("incomingElse")
             useStateSetObject.setMessageHistory({
                 ...useStateValueObject.messageHistory,
                 [messageObj.ChatId]: [messageObj]
@@ -315,13 +311,9 @@ const Chat = () => {
             let newOnlineChat = currentActiveChat.slice(1);
             newOnlineChat.push(chatId);
             useStateSetObject.setActiveChat(newOnlineChat);
-
             upgradedPedingChat.push(firstChatId)
-
         } else {
-
             useStateSetObject.setActiveChat([...currentActiveChat, chatId])
-
         }
 
         useStateSetObject.setPendingChat(upgradedPedingChat);
