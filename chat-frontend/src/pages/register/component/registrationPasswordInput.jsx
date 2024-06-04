@@ -70,12 +70,12 @@ const PasswordInput = () => {
                     regUseStateValueObj.PasswordResult === true ? "registrationCheckTrue" :
                         "registrationCheckFalse"
                 }>
-                    <input type={passwordVisible ? "text" : "password"}
+                    <input type={regUseStateValueObj.PasswordVisible ? "text" : "password"}
                         placeholder="New password"
                         onChange={(e) => passwordValidator(e.target.value)}
                         onBlur={(e) => { passwordValidator(e.target.value) }}
                         className="registrationInput"
-                        defaultValue={Password !== null ? Password : ""}>
+                        defaultValue={regUseStateValueObj.Password !== null ? regUseStateValueObj.Password : ""}>
                     </input>
                     {
                         regUseStateValueObj.PasswordResult === true ? <span>✔</span> :

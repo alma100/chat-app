@@ -18,7 +18,7 @@ const PasswordConfirm = () => {
 
     const saveConfirmPass = (e) => {
         let input = e.target.value;
-        if (input === Password) {
+        if (input === regUseStateValueObj.Password) {
             regUseStateSetObj.setPasswordConfirm(true);
             regUseStateSetObj.setPasswordConfirmValue(input);
         } else {

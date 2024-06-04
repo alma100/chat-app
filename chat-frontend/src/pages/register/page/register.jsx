@@ -16,7 +16,7 @@ import { useRegContext } from "../../../context/registerContext";
 
 const Registration = () => {
 
-   const {regUseStateValueObj, regUseStateSetObj} = useRegContext()
+    const { regUseStateValueObj, regUseStateSetObj } = useRegContext()
 
     const navigate = useNavigate();
 
@@ -89,39 +89,39 @@ const Registration = () => {
 
                             </Grid>
                             <Grid item xs={4}>
-                                    <div id="registerContainer">
-                                        <div id="regContextContainer">
-                                            <RegistrationProcessBar />
-                                            <div id="registrationBox">
-                                                <h2>Sign Up</h2>
-                                            </div>
-                                            <NameInput />
-
-                                            <div id="registrationUserDataContainer">
-                                                <UsernameInput />
-
-                                                <EmailInput />
-
-                                                <PasswordInput />
-
-                                                <PasswordConfirmInput />
-
-                                                {
-                                                    regUseStateValueObj.PasswordResult === true && regUseStateValueObj.EmailResult === true && regUseStateValueObj.UsernameResult === true &&
-                                                    regUseStateValueObj.PasswordConfirm === true && regUseStateValueObj.FirstnameResult === true && regUseStateValueObj.LastnameResult === true ?
-                                                        (
-                                                            <div>
-                                                                <button onClick={() => registrationHandler()}>Submit</button>
-                                                            </div>
-                                                        ) : (
-                                                            <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
-
-                                                        )
-                                                }
-                                            </div>
-
+                                <div id="registerContainer">
+                                    <div id="regContextContainer">
+                                        <RegistrationProcessBar />
+                                        <div id="registrationBox">
+                                            <h2>Sign Up</h2>
                                         </div>
+                                        <NameInput />
+
+                                        <div id="registrationUserDataContainer">
+                                            <UsernameInput />
+
+                                            <EmailInput />
+
+                                            <PasswordInput />
+
+                                            <PasswordConfirmInput />
+
+                                            {
+                                                regUseStateValueObj.PasswordResult === true && regUseStateValueObj.EmailResult === true && regUseStateValueObj.UsernameResult === true &&
+                                                    regUseStateValueObj.PasswordConfirm === true && regUseStateValueObj.FirstnameResult === true && regUseStateValueObj.LastnameResult === true ?
+                                                    (
+                                                        <div>
+                                                            <button onClick={() => registrationHandler()}>Submit</button>
+                                                        </div>
+                                                    ) : (
+                                                        <div>Already registered? Log in <span onClick={() => navigate("/login")}>here</span>.</div>
+
+                                                    )
+                                            }
+                                        </div>
+
                                     </div>
+                                </div>
                             </Grid>
                             <Grid item xs={4}>
 
@@ -130,7 +130,7 @@ const Registration = () => {
                     </Box>
 
                 ) :
-                regUseStateValueObj.RegistrationResult === true ? (
+                    regUseStateValueObj.RegistrationResult === true ? (
                         <SuccessRegistration />
                     ) : (
                         <>
@@ -141,8 +141,9 @@ const Registration = () => {
                                 <h4>
                                     Error(s):
                                 </h4>
-                                {regUseStateValueObj.ServerErrorMessage &&
-                                    Object.entries(regUseStateValueObj.serverErrorMessage).map(([key, value], index) => (
+                                {
+                                    regUseStateValueObj.ServerErrorMessage &&
+                                    Object.entries(regUseStateValueObj.ServerErrorMessage).map(([key, value], index) => (
                                         <div key={index}>
                                             <strong>{key}:</strong>
                                             {value.map((errorMessage, subIndex) => (
