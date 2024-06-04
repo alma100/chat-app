@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { Box, Grid, useScrollTrigger } from "@mui/material";
 import "../register.css";
@@ -8,6 +8,7 @@ import EmailInput from "../component/emailInput";
 import PasswordInput from "../component/registrationPasswordInput";
 import PasswordConfirmInput from "../component/regPassConfirmInput";
 import SuccessRegistration from "../component/successfulRegistration";
+import UnSuccessfullReg from "../component/unSuccessfullReg";
 import RegistrationProcessBar from "../component/registrationProcessbar";
 import { useRegContext } from "../../../context/registerContext";
 
@@ -133,32 +134,7 @@ const Registration = () => {
                     regUseStateValueObj.RegistrationResult === true ? (
                         <SuccessRegistration />
                     ) : (
-                        <>
-                            <div id="regResContainer">
-                                <h2>
-                                    UnSuccesfull registration!
-                                </h2>
-                                <h4>
-                                    Error(s):
-                                </h4>
-                                {
-                                    regUseStateValueObj.ServerErrorMessage &&
-                                    Object.entries(regUseStateValueObj.ServerErrorMessage).map(([key, value], index) => (
-                                        <div key={index}>
-                                            <strong>{key}:</strong>
-                                            {value.map((errorMessage, subIndex) => (
-                                                <div key={subIndex}>
-                                                    {errorMessage}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ))
-                                }
-                            </div>
-
-                            <div><span onClick={() => { serverErrorHandler() }}>Back to the registration</span> or <span>home page</span>.</div>
-
-                        </>
+                        <UnSuccessfullReg serverErrorHandler={serverErrorHandler}/>
                     )
             }
 

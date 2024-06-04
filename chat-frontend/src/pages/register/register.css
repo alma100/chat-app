@@ -108,7 +108,7 @@
     width: 340px;
 }
 
-#regPassInputContainer{
+#regPassInputContainer {
     position: absolute;
     top: 0;
     left: -80%;
@@ -122,17 +122,17 @@
     color: #000;
 }
 
-#regPassInputWrapper{
+#regPassInputWrapper {
     position: relative;
 }
 
-#passInputTriangle{
+#passInputTriangle {
     position: absolute;
     top: 10%;
     right: -7%;
     border-top: 20px solid transparent;
     border-bottom: 20px solid transparent;
-    border-left: 20px solid  rgb(218, 95, 74);
+    border-left: 20px solid rgb(218, 95, 74);
     z-index: 10;
 }
 
@@ -162,14 +162,14 @@
     background-color: whitesmoke;
 }
 
-.showIcon{
-    width: 20px; 
-    height: 20px; 
+.showIcon {
+    width: 20px;
+    height: 20px;
     margin-left: 5px;
-    margin-top:2px;
+    margin-top: 2px;
 }
 
-#regSuccesResContainer{
+/*#regSuccesResContainer{
     width: 450px;
     height: 100px;
     box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
@@ -179,7 +179,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
+}*/
 
 #regSuccesResContainer {
     width: 450px;
@@ -206,7 +206,8 @@
 }
 
 
-#succesRegResRoot{
+#succesRegResRoot,
+#unSuccessRegResRoot {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -214,10 +215,13 @@
     height: 100%;
 }
 
-#registrationProcess{
+#unSuccessRegResRoot {
+    flex-direction: column;
+}
+
+#registrationProcess {
     position: relative;
     top: 0;
     /*left: -40%;*/
     height: 5px;
 }
-
