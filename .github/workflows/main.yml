@@ -23,8 +23,7 @@ jobs:
 
     - name: Log in to Amazon ECR
       id: ecr-login
-      run: |
-        aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+      uses: aws-actions/amazon-ecr-login@v2
 
     - name: Build and push Docker images to ECR
       env:
@@ -36,10 +35,8 @@ jobs:
         docker tag chat-app_chat-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
         docker tag chat-app_auth-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
         docker tag chat-app_ws-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
-        docker tag mcr.microsoft.com/mssql/server:2022-latest $ECR_REGISTRY/$ECR_REPOSITORY/chat-db:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY/chat-db:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TA
 
    
