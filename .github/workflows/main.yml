@@ -27,7 +27,7 @@ jobs:
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker-compose -f docker-compose.yml build --progress=plain
+        docker-compose -f Docker-compose.yml build --progress=plain
 
     - name: List Docker images
       run: |
