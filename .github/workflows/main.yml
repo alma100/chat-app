@@ -28,7 +28,13 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker-compose -f Docker-compose.yml build --progress=plain
+        docker tag chat-app_chat-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
+        docker tag chat-app_auth-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
+        docker tag chat-app_ws-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
+        docker tag mcr.microsoft.com/mssql/server:2022-latest $ECR_REGISTRY/$ECR_REPOSITORY/chat-db:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY/chat-db:$IMAGE_TAG
 
-    - name: List Docker images
-      run: |
-        docker images
+   
