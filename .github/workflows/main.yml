@@ -34,9 +34,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         docker-compose -f Docker-compose.yml build --progress=plain
-        docker tag chat-app_chat-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker tag chat-app_auth-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
-        docker tag chat-app_ws-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
+        docker tag chat-app_chat-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
         docker push $ECR_REGISTRY/$ECR_REPOSITORY
         
 
