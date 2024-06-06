@@ -23,18 +23,18 @@ const UsernameInput = () => {
         if (isUsernameLengthValid(input)) {
             const isUsed = await isUsernameUsed(input);
             if (!isUsed) {
-                regUseStateSetObj.setUsernameState(input);
-                regUseStateSetObj.setUsernameResultValue(true);
+                regUseStateSetObj.setUsername(input);
+                regUseStateSetObj.setUsernameResult(true);
             } else {
-                regUseStateSetObj.setUsernameResultValue(false);
+                regUseStateSetObj.setUsernameResult(false);
             }
         }
     }
 
     const isUsernameLengthValid = (username) => {
-        return username === "" ? regUseStateSetObj.setUsernameResultValue("") :
-            username.length < 5 ? regUseStateSetObj.setUsernameResultValue("short") :
-                username.length > 12 ? regUseStateSetObj.setUsernameResultValue("large") :
+        return username === "" ? regUseStateSetObj.setUsernameResult("") :
+            username.length < 5 ? regUseStateSetObj.setUsernameResult("short") :
+                username.length > 12 ? regUseStateSetObj.setUsernameResult("large") :
                     true;
     }
 
@@ -60,7 +60,7 @@ const UsernameInput = () => {
                     onBlur={(e) => usernameValidator(e)}
                     placeholder="Username"
                     className="registrationInput"
-                    onChange={(e) => setUsernameState(e.target.value)}
+                    onChange={(e) => regUseStateSetObj.setUsername(e.target.value)}
                     defaultValue={regUseStateValueObj.Username !== null ? regUseStateValueObj.Username : ""}
                 ></input>
                 {

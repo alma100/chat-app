@@ -73,6 +73,12 @@ public class MessageController : ControllerBase
         }
         
     }
+    
+    [HttpGet("StatusCheck")]
+    public IActionResult StatusCheck()
+    {
+        return Ok("Connection is good.");
+    }
 
     private int UpdateCurrentMessageIndex(int index)
     {
