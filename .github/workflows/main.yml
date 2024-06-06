@@ -37,8 +37,8 @@ jobs:
         docker tag chat-app_chat-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
         docker tag chat-app_auth-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
         docker tag chat-app_ws-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY/chat-frontend:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY/auth-backend:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY/ws-backend:$IMAGE_TA
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TA
 
    
