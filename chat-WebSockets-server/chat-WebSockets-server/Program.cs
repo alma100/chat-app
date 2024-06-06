@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using WebSocketManager = chat_WebSockets_server.Service.WebSocketManager;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

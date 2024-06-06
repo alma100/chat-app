@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+  chat-frontend:
+    build:
+      context: ./chat-frontend
+      dockerfile: Dockerfile
+    container_name: chat-frontend
+    ports:
+      - "80:80"
+    expose:
+      - 80
+    networks:
+      - chat-network
+    depends_on:
+      - auth-backend
+
+  auth-backend:
+    build:
+      context: ./chat-HTTP-server/chat-HTTP-server
+      dockerfile: Dockerfile
+    container_name: auth-backend
+    ports:
+      - "5129:5129"
+    depends_on:
+      - chat-db
+    networks:
+      - chat-network
+
+  ws-backend:
+    build:
+      context: ./chat-WebSockets-server/chat-WebSockets-server
+      dockerfile: Dockerfile
+    container_name: ws-backend
+    ports:
+      - "5102:5102"
+    depends_on:
+      - auth-backend
+    networks:
+      - chat-network
+
+  chat-db:
+    container_name: chat-db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=yourStrong(!)Password
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    expose:
+      - 1433
+    volumes:
+      - app_data:/var/lib/postgresql/data
+    networks:
+      - chat-network
+
+volumes:
+  app_data:
+
+networks:
+  chat-network:
+    driver: bridge

@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
           credentials: true,
         },
         '/ws': {
-          target: env.BACKEND_URL || 'http://localhost:5102', //http://localhost:5102/ws/Message/GetAllChatMessage
+          target: env.BACKEND_URL || 'http://localhost:5102', 
           changeOrigin: true,
           credentials: true,
         },

@@ -11,7 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Configuration.AddEnvironmentVariables();
 var configuration = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -48,12 +48,18 @@ builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 builder.Logging.AddConsole();
 
 AddDbContext();
+
 AddServices();
 
 AddAuthentication();
 AddIdentity();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ChatContext>();
+    dbContext.Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -70,8 +76,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseCookiePolicy();
 AddRoles();
-app.Run();
 
+
+Console.WriteLine("Done");
+app.Run();
 
 
 #region AddDbContext()

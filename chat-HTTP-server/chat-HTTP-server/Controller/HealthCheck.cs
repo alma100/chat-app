@@ -8,8 +8,8 @@ namespace chat_HTTP_server.Controller;
 [Route("api/[controller]")]
 public class HealthCheck : ControllerBase
 {
-    [HttpGet("HealtCheck")]
-    public ActionResult HealtCheck()
+    [HttpGet("HealthCheck")]
+    public ActionResult Health()
     {
         return Ok();
     }
