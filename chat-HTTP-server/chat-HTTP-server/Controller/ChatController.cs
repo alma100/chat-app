@@ -14,19 +14,17 @@ namespace chat_HTTP_server.Controller;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChatController : ControllerBase
+public class ChatController : CustomControllerBase<ChatController>
 {
     private readonly IUserRepository _userRepository;
 
     private readonly IChatRepository _chatRepository;
+    
 
-    private readonly ILogger<ChatController> _logger;
-
-    public ChatController(IUserRepository userRepository, IChatRepository chatRepository, ILogger<ChatController> logger)
+    public ChatController(IUserRepository userRepository, IChatRepository chatRepository, ILogger<ChatController> logger) : base(logger)
     {
         _userRepository = userRepository;
         _chatRepository = chatRepository;
-        _logger = logger;
     }
 
     [HttpPost("GetUserByName")]
@@ -41,7 +39,7 @@ public class ChatController : ControllerBase
 
             if (userId == null)
             {
-                _logger.LogWarning($"Client with this IP: {clientIp} try to searched some user with this keyword: {searchRequest.Name}, " +
+                Logger.LogWarning($"Client with this IP: {clientIp} try to searched some user with this keyword: {searchRequest.Name}, " +
                                    $"but did not have the appropriate authorization. at: {DateTime.UtcNow}");
                 return Unauthorized();
             }
@@ -50,13 +48,13 @@ public class ChatController : ControllerBase
         
             var userDtos = result.Select(u => u.ConvertUserToUserDto()).ToList();
             
-            _logger.LogInformation($"User with this ID: {userId} searched some user successfully with this keyword: {searchRequest.Name} at:{DateTime.UtcNow}");
+            Logger.LogInformation($"User with this ID: {userId} searched some user successfully with this keyword: {searchRequest.Name} at:{DateTime.UtcNow}");
     
             return Ok(userDtos);
         }
         catch (Exception e)
         {
-            _logger.LogInformation($"Client with this IP: {clientIp} try to searched some user with this keyword: {searchRequest.Name}," +
+            Logger.LogInformation($"Client with this IP: {clientIp} try to searched some user with this keyword: {searchRequest.Name}," +
                                    $"but unexpected error occured: {e} at:{DateTime.UtcNow}");
 
             return StatusCode(500);
@@ -78,13 +76,13 @@ public class ChatController : ControllerBase
         
             var userDto = result.ConvertUserToUserDto();
     
-            _logger.LogInformation($"User with this ID: {currentUserId} request user, user ID: {userId} data at:{DateTime.UtcNow}");
+            Logger.LogInformation($"User with this ID: {currentUserId} request user, user ID: {userId} data at:{DateTime.UtcNow}");
             
             return Ok(userDto);
         }
         catch (Exception e)
         {
-            _logger.LogInformation($"Client with this IP: {clientIp} try to get this user data, user ID: {userId}," +
+            Logger.LogInformation($"Client with this IP: {clientIp} try to get this user data, user ID: {userId}," +
                                    $"but unexpected error occured: {e} at:{DateTime.UtcNow}");
             
             return StatusCode(500);
@@ -115,7 +113,7 @@ public class ChatController : ControllerBase
         
             if (chatId == -1)
             {
-                _logger.LogWarning($"User with this ID: {userId} try to created chat but the same chat already exists at: {DateTime.UtcNow}." );
+                Logger.LogWarning($"User with this ID: {userId} try to created chat but the same chat already exists at: {DateTime.UtcNow}." );
                 
                 return BadRequest();
             }
@@ -128,13 +126,13 @@ public class ChatController : ControllerBase
                 UsersFullName = userFullname
             };
             
-            _logger.LogInformation($"User with this ID: {userId} created a new chat, chat ID: {chatId} at: {DateTime.UtcNow}.");
+            Logger.LogInformation($"User with this ID: {userId} created a new chat, chat ID: {chatId} at: {DateTime.UtcNow}.");
             
             return Ok(chatTdo);
         }
         catch (Exception e)
         {
-            _logger.LogInformation($"Client with this IP: {clientIp} try to create a new chat," +
+            Logger.LogInformation($"Client with this IP: {clientIp} try to create a new chat," +
                                    $"but unexpected error occured: {e} at:{DateTime.UtcNow}");
             
             return StatusCode(500);
@@ -154,20 +152,20 @@ public class ChatController : ControllerBase
 
             if (userId == null)
             {
-                _logger.LogWarning($"Client with this IP: {clientIp} try to request chat data, at: {DateTime.UtcNow}");
+                Logger.LogWarning($"Client with this IP: {clientIp} try to request chat data, at: {DateTime.UtcNow}");
                 
                 return Unauthorized();
             }
         
             var res = await _userRepository.GetAllChatByUserId(userId);
         
-            _logger.LogInformation($"User with this ID: {userId} request his all chat, at: {DateTime.UtcNow}");
+            Logger.LogInformation($"User with this ID: {userId} request his all chat, at: {DateTime.UtcNow}");
             
             return Ok(res);
         }
         catch (Exception e)
         {
-            _logger.LogWarning($"Client with this IP: {clientIp} try to request chat data," +
+            Logger.LogWarning($"Client with this IP: {clientIp} try to request chat data," +
                                    $"but unexpected error occured: {e} at:{DateTime.UtcNow}");
             
             return StatusCode(500);
