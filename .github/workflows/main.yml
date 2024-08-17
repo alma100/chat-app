@@ -4,39 +4,61 @@ on:
   push:
     branches:
       - main
-
 jobs:
-  deploy:
+  terraform:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.3
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Terraform Init
+        uses: hashicorp/terraform-github-actions/init@v0.4.0
+        env:
+          TF_ACTION_WORKING_DIR: 'Terraform/repository'
+          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          
+      - name: Terraform Apply
+        uses: hashicorp/terraform-github-actions/apply@v0.4.0
+        env:
+          TF_ACTION_WORKING_DIR: 'Terraform/repository'
+          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: terraform  
 
-    - name: Build and push Docker images to ECR
-      env:
-        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        REPOSITORY: aba_repository
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        docker-compose -f Docker-compose.yml build --progress=plain
-        # Tag the images
-        docker tag chat-app_chat-frontend:latest $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
-        docker tag chat-app_auth-backend:latest $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
-        docker tag chat-app_ws-backend:latest $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        # Push the images
-        docker push $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
-        docker push $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
-        docker push $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker images to ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: aba_repository
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker-compose -f Docker-compose.yml build --progress=plain
+          docker tag chat-app_chat-frontend:latest $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
+          docker tag chat-app_auth-backend:latest $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
+          docker tag chat-app_ws-backend:latest $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
