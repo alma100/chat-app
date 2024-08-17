@@ -1,12 +1,16 @@
-provider "aws" {
-  region = var.aws_region
-}
-
-terraform {
+erraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
+      source = "hashicorp/aws"
+      Version = "~>3.27"
     }
   }
+
+  required_version = ">=0.14.9"
+
+}
+
+provider "aws" {
+  version = "~>3.0"
+  region  = "east-us-1"
 }
