@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import Eye from "../../icons/eye.png"
 import Hide from "../../icons/hide.png"
@@ -18,6 +18,7 @@ const Login = () => {
 
     const { setProfileData } = useUserDataContext();
 
+    
     const loginRequestFetch = (loginData) => {
         return fetch('/api/Auth/Login', {
             method: 'POST',
@@ -62,7 +63,7 @@ const Login = () => {
             name: email,
             password: password
         };
-        console.log(data)
+
         loginRequestFetch(data).then(
             res => {
                 if (res !== undefined) {
@@ -71,6 +72,8 @@ const Login = () => {
                 }
             }
         )
+       
+
     }
 
     const handleKeyPress = (e) => {
@@ -79,7 +82,7 @@ const Login = () => {
         }
     }
 
-    
+
     return (
         <div id="loginRoot">
             <div id="loginContainer">

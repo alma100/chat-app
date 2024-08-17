@@ -5,13 +5,13 @@ const DisplayAllChat = ({messageBackToOnline}) => {
     const {useStateValueObject, useStateSetObject} = useChatDataContex();
 
     const chatHandler = (chatDto) => {
-        console.log(chatDto.id);
+
         if (!(chatDto.id in useStateValueObject.messageHistory)) {
 
             useStateSetObject.setMessageHistory({
                 ...useStateValueObject.messageHistory,
                 [chatDto.id]: []
-            }); //ha mégnem kapott üzenetet DONE ,  + létrehozni és lekérni a régi üzeneteket.!!!
+            }); 
         }
 
         if (!useStateValueObject.activeChat.includes(chatDto.id) && !useStateValueObject.pendingChat.includes(chatDto.id)) {
@@ -27,8 +27,6 @@ const DisplayAllChat = ({messageBackToOnline}) => {
     }
 
     const creatDefaultMessHistoryValue = (currentIndex) => {
-
-        console.log("default index creat")
 
         let updatedSplitedMessage = { ...useStateValueObject.messageHistoryIndex };
 
