@@ -76,9 +76,9 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker compose -f Docker-compose.yml build --progress=plain
-          docker tag chat-app_chat-frontend:latest $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
-          docker tag chat-app_auth-backend:latest $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
-          docker tag chat-app_ws-backend:latest $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
+          docker tag chat-app-chat-frontend:latest $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
+          docker tag chat-app-auth-backend:latest $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
+          docker tag chat-app-ws-backend:latest $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:frontend-$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:auth-backend-$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:ws-backend-$IMAGE_TAG
